@@ -80,6 +80,8 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
     }
   };
 
+
+
   const handleMoveToWaitlist = async (userId) => {
     try {
       setLoading(true);
@@ -104,10 +106,25 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
     }
   };
 
+  const handleMoveToNoGo = async (userId) => {
+    try {
+      setLoading(true);
+      await axios.post(`/events/${event._id}/nogo`, { userId });
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to move user to not going');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEditEvent = () => {
-    // Format the date for the date input (YYYY-MM-DD)
+    // Format the date for the date input (YYYY-MM-DD) using local timezone
     const eventDate = new Date(event.date);
-    const formattedDate = eventDate.toISOString().split('T')[0];
+    const year = eventDate.getFullYear();
+    const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+    const day = String(eventDate.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
     
     // Format the time for the time input (HH:MM)
     const formattedTime = event.time || '12:00';
@@ -217,48 +234,50 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
           </Box>
         </CardContent>
         
-        <CardActions sx={{ justifyContent: 'space-between', p: 3, pt: 0 }}>
-          <Box>
-            {!isGoing && !isWaitlisted && !isNoGo && (
-              <Button
-                size="small"
-                startIcon={<PersonAdd />}
-                onClick={handleJoinWaitlist}
-                disabled={loading}
-              >
-                Join Waitlist
-              </Button>
-            )}
+        <CardActions sx={{ flexDirection: 'column', alignItems: 'flex-start', p: 3, pt: 0, gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {!isGoing && !isWaitlisted && !isNoGo && (
+                <Button
+                  size="small"
+                  startIcon={<PersonAdd />}
+                  onClick={handleJoinWaitlist}
+                  disabled={loading}
+                >
+                  Join Waitlist
+                </Button>
+              )}
+              
+              {isAdmin && (
+                <Button
+                  size="small"
+                  startIcon={<Visibility />}
+                  onClick={() => setShowAttendeesDialog(true)}
+                >
+                  View Attendees
+                </Button>
+              )}
+            </Box>
             
             {isAdmin && (
-              <Button
-                size="small"
-                startIcon={<Visibility />}
-                onClick={() => setShowAttendeesDialog(true)}
-              >
-                View Attendees
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton
+                  size="small"
+                  color="primary"
+                  onClick={handleEditEvent}
+                >
+                  <Edit />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={handleDeleteEvent}
+                >
+                  <Delete />
+                </IconButton>
+              </Box>
             )}
           </Box>
-          
-          {isAdmin && (
-            <>
-              <IconButton
-                size="small"
-                color="primary"
-                onClick={handleEditEvent}
-              >
-                <Edit />
-              </IconButton>
-              <IconButton
-                size="small"
-                color="error"
-                onClick={handleDeleteEvent}
-              >
-                <Delete />
-              </IconButton>
-            </>
-          )}
         </CardActions>
       </Card>
 
@@ -290,24 +309,15 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
                   primary={`${user?.firstName} ${user?.lastName}`}
                   secondary={user?.email}
                 />
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    size="small"
-                    onClick={() => handleMoveToWaitlist(user._id)}
-                    disabled={loading}
-                  >
-                    Move to Waitlist
-                  </Button>
-                  <Button
-                    size="small"
-                    color="error"
-                    variant="outlined"
-                    onClick={() => handleDenyUser(user._id)}
-                    disabled={loading}
-                  >
-                    Deny
-                  </Button>
-                </Box>
+                <Button
+                  size="small"
+                  color="error"
+                  variant="outlined"
+                  onClick={() => handleDenyUser(user._id)}
+                  disabled={loading}
+                >
+                  Deny
+                </Button>
               </ListItem>
             ))}
           </List>
@@ -327,14 +337,25 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
                   primary={`${user?.firstName} ${user?.lastName}`}
                   secondary={user?.email}
                 />
-                <Button
-                  size="small"
-                  variant="contained"
-                  onClick={() => handleApproveUser(user._id)}
-                  disabled={loading}
-                >
-                  Approve
-                </Button>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={() => handleApproveUser(user._id)}
+                    disabled={loading}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    size="small"
+                    color="error"
+                    variant="outlined"
+                    onClick={() => handleMoveToNoGo(user._id)}
+                    disabled={loading}
+                  >
+                    Deny
+                  </Button>
+                </Box>
               </ListItem>
             ))}
           </List>
@@ -351,10 +372,10 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
                     <ListItemAvatar>
                       <Avatar>{user?.firstName?.charAt(0) || 'U'}</Avatar>
                     </ListItemAvatar>
-                    <ListItemText 
-                      primary={`${user?.firstName} ${user?.lastName}`}
-                      secondary={user?.email}
-                    />
+                                    <ListItemText 
+                  primary={`${user?.firstName} ${user?.lastName}`}
+                  secondary={user?.email}
+                />
                     <Button
                       size="small"
                       onClick={() => handleMoveToWaitlist(user._id)}

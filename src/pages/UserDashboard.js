@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 import {
   Box,
   Typography,
-  Button,
   Container,
   Grid,
   Paper,
@@ -22,7 +21,6 @@ import {
   Event,
   Dashboard,
   People,
-  Logout,
 } from '@mui/icons-material';
 import GroupCard from '../components/GroupCard';
 import EventCard from '../components/EventCard';
@@ -170,7 +168,7 @@ const UserDashboard = () => {
                     <GroupCard
                       group={group}
                       onUpdate={fetchUserData}
-                      isAdmin={group.adminId === user._id}
+                      isAdmin={user.role === 'admin'}
                       userRole={user.role}
                     />
                   </Grid>
