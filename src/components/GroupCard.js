@@ -29,6 +29,8 @@ import axios from 'axios';
 const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showEventDialog, setShowEventDialog] = useState(false);
+  const [showFullName, setShowFullName] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
   const [eventData, setEventData] = useState({
     title: '',
     description: '',
@@ -99,17 +101,59 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
         flexDirection: 'column',
         bgcolor: '#fefefe',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)',
+        maxWidth: '320px', // Fixed width based on ~40 characters
+        minWidth: '320px',
+        width: '320px',
+        overflow: 'hidden',
+        wordBreak: 'break-word',
         '&:hover': {
           bgcolor: '#fafafa',
           boxShadow: '0 4px 16px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08)',
           transition: 'all 0.3s ease-in-out'
         }
       }}>
-        <CardContent sx={{ flexGrow: 1, p: 3 }}>
+        <CardContent sx={{ 
+          flexGrow: 1, 
+          p: 3,
+          overflow: 'hidden',
+          wordWrap: 'break-word',
+          minWidth: 0,
+          maxWidth: '100%',
+          width: '100%'
+        }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-            <Typography variant="h6" component="h3" gutterBottom>
-              {group.name}
-            </Typography>
+            <Box sx={{ flexGrow: 1, mr: 1 }}>
+              <Typography 
+                variant="h6" 
+                component="h3" 
+                sx={{
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  hyphens: 'auto',
+                  maxWidth: '100%',
+                  lineHeight: 1.2
+                }}
+              >
+                {group.name && group.name.length > 40 && !showFullName
+                  ? `${group.name.substring(0, 40)}...`
+                  : group.name}
+              </Typography>
+              {group.name && group.name.length > 40 && (
+                <Button
+                  size="small"
+                  onClick={() => setShowFullName(!showFullName)}
+                  sx={{ 
+                    p: 0, 
+                    mt: 0.5,
+                    minWidth: 'auto',
+                    textTransform: 'none',
+                    fontSize: '0.75rem'
+                  }}
+                >
+                  {showFullName ? 'Show Less' : 'Show More'}
+                </Button>
+              )}
+            </Box>
             {isAdmin && (
               <Chip 
                 label="Admin" 
@@ -120,9 +164,39 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
             )}
           </Box>
           
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {group.description}
-          </Typography>
+          <Box sx={{ mb: 2 }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                hyphens: 'auto',
+                lineHeight: 1.5,
+                maxWidth: '100%',
+                whiteSpace: 'pre-line'
+              }}
+            >
+              {group.description && group.description.length > 40 && !showFullDescription
+                ? `${group.description.substring(0, 40)}...`
+                : group.description}
+            </Typography>
+            {group.description && group.description.length > 40 && (
+              <Button
+                size="small"
+                onClick={() => setShowFullDescription(!showFullDescription)}
+                sx={{ 
+                  p: 0, 
+                  mt: 0.5,
+                  minWidth: 'auto',
+                  textTransform: 'none',
+                  fontSize: '0.75rem'
+                }}
+              >
+                {showFullDescription ? 'Show Less' : 'Show More'}
+              </Button>
+            )}
+          </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
             <People sx={{ fontSize: 16, color: 'text.secondary' }} />

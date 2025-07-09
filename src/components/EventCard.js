@@ -42,6 +42,8 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [showFullTitle, setShowFullTitle] = useState(false);
   const [editData, setEditData] = useState({
     title: '',
     description: '',
@@ -113,6 +115,18 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
       if (onUpdate) onUpdate();
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to move user to not going');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNotGoing = async () => {
+    try {
+      setLoading(true);
+      await axios.post(`/events/${event._id}/nogo`, { userId: currentUserId });
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to mark as not going');
     } finally {
       setLoading(false);
     }
@@ -190,25 +204,97 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
         flexDirection: 'column',
         bgcolor: '#fefefe',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)',
+        maxWidth: '420px', // Fixed width based on ~60 characters
+        minWidth: '420px',
+        width: '420px',
+        overflow: 'hidden',
+        wordBreak: 'break-word',
         '&:hover': {
           bgcolor: '#fafafa',
           boxShadow: '0 4px 16px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08)',
           transition: 'all 0.3s ease-in-out'
         }
       }}>
-        <CardContent sx={{ flexGrow: 1, p: 3 }}>
+        <CardContent sx={{ 
+          flexGrow: 1, 
+          p: 3, 
+          overflow: 'hidden', // Prevent horizontal overflow
+          wordWrap: 'break-word', // Ensure all text wraps
+          minWidth: 0, // Allow content to shrink
+          maxWidth: '100%', // Strict width constraint
+          width: '100%' // Ensure it takes full width of card
+        }}>
           {/* Status chip at the top */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
             {getStatusChip()}
           </Box>
           
-          <Typography variant="h6" component="h3" gutterBottom>
-            {event.title}
-          </Typography>
+          <Box sx={{ mb: 1 }}>
+            <Typography 
+              variant="h6" 
+              component="h3" 
+              sx={{
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                hyphens: 'auto',
+                maxWidth: '100%',
+                lineHeight: 1.2
+              }}
+            >
+              {event.title && event.title.length > 60 && !showFullTitle
+                ? `${event.title.substring(0, 60)}...`
+                : event.title}
+            </Typography>
+            {event.title && event.title.length > 60 && (
+              <Button
+                size="small"
+                onClick={() => setShowFullTitle(!showFullTitle)}
+                sx={{ 
+                  p: 0, 
+                  mt: 0.5,
+                  minWidth: 'auto',
+                  textTransform: 'none',
+                  fontSize: '0.75rem'
+                }}
+              >
+                {showFullTitle ? 'Show Less' : 'Show More'}
+              </Button>
+            )}
+          </Box>
           
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {event.description}
-          </Typography>
+          <Box sx={{ mb: 2 }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                hyphens: 'auto',
+                lineHeight: 1.5,
+                maxWidth: '100%',
+                whiteSpace: 'pre-line' // Preserve line breaks
+              }}
+            >
+              {event.description && event.description.length > 60 && !showFullDescription
+                ? `${event.description.substring(0, 60)}...`
+                : event.description}
+            </Typography>
+            {event.description && event.description.length > 60 && (
+              <Button
+                size="small"
+                onClick={() => setShowFullDescription(!showFullDescription)}
+                sx={{ 
+                  p: 0, 
+                  mt: 0.5,
+                  minWidth: 'auto',
+                  textTransform: 'none',
+                  fontSize: '0.75rem'
+                }}
+              >
+                {showFullDescription ? 'Show Less' : 'Show More'}
+              </Button>
+            )}
+          </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
             <Schedule sx={{ fontSize: 16, color: 'text.secondary' }} />
@@ -219,8 +305,16 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
           
           {event.location && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <LocationOn sx={{ fontSize: 16, color: 'text.secondary' }} />
-              <Typography variant="body2" color="text.secondary">
+              <LocationOn sx={{ fontSize: 16, color: 'text.secondary', flexShrink: 0 }} />
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  maxWidth: '100%'
+                }}
+              >
                 {event.location}
               </Typography>
             </Box>
@@ -234,33 +328,90 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
           </Box>
         </CardContent>
         
-        <CardActions sx={{ flexDirection: 'column', alignItems: 'flex-start', p: 3, pt: 0, gap: 1 }}>
-          <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <CardActions sx={{ 
+          flexDirection: 'column', 
+          alignItems: 'stretch', 
+          p: 3, 
+          pt: 0, 
+          gap: 1,
+          '& .MuiBox-root': {
+            margin: 0,
+            padding: 0
+          }
+        }}>
+          {/* User Response Actions Row */}
+          <Box sx={{ 
+            display: 'flex', 
+            width: '100%', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            margin: 0,
+            padding: 0
+          }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 1, 
+              flexWrap: 'wrap',
+              margin: 0,
+              padding: 0
+            }}>
               {!isGoing && !isWaitlisted && !isNoGo && (
-                <Button
-                  size="small"
-                  startIcon={<PersonAdd />}
-                  onClick={handleJoinWaitlist}
-                  disabled={loading}
-                >
-                  Join Waitlist
-                </Button>
+                <>
+                  <Button
+                    size="small"
+                    startIcon={<PersonAdd />}
+                    onClick={handleJoinWaitlist}
+                    disabled={loading}
+                    sx={{ 
+                      margin: 0,
+                      padding: '6px 16px',
+                      minWidth: 0
+                    }}
+                  >
+                    Join Waitlist
+                  </Button>
+                  <Button
+                    size="small"
+                    startIcon={<Cancel />}
+                    onClick={handleNotGoing}
+                    disabled={loading}
+                    color="error"
+                    sx={{ 
+                      margin: 0,
+                      padding: '6px 16px',
+                      minWidth: 0
+                    }}
+                  >
+                    Not Going
+                  </Button>
+                </>
               )}
               
-              {isAdmin && (
+              {(isGoing || isWaitlisted) && (
                 <Button
                   size="small"
-                  startIcon={<Visibility />}
-                  onClick={() => setShowAttendeesDialog(true)}
+                  startIcon={<Cancel />}
+                  onClick={handleNotGoing}
+                  disabled={loading}
+                  color="error"
+                  sx={{ 
+                    margin: 0,
+                    padding: '6px 16px',
+                    minWidth: 0
+                  }}
                 >
-                  View Attendees
+                  Not Going
                 </Button>
               )}
             </Box>
             
             {isAdmin && (
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 1,
+                margin: 0,
+                padding: 0
+              }}>
                 <IconButton
                   size="small"
                   color="primary"
@@ -278,6 +429,31 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
               </Box>
             )}
           </Box>
+          
+          {/* Admin Actions Row */}
+          {isAdmin && (
+            <Box sx={{ 
+              display: 'flex', 
+              width: '100%', 
+              justifyContent: 'flex-start', 
+              alignItems: 'center',
+              margin: 0,
+              padding: 0
+            }}>
+              <Button
+                size="small"
+                startIcon={<Visibility />}
+                onClick={() => setShowAttendeesDialog(true)}
+                sx={{ 
+                  margin: 0,
+                  padding: '6px 16px',
+                  minWidth: 0
+                }}
+              >
+                View Attendees
+              </Button>
+            </Box>
+          )}
         </CardActions>
       </Card>
 
@@ -301,23 +477,37 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
           </Typography>
           <List dense>
             {event.goingList?.map((user) => (
-              <ListItem key={user._id}>
-                <ListItemAvatar>
-                  <Avatar>{user?.firstName?.charAt(0) || 'U'}</Avatar>
-                </ListItemAvatar>
-                <ListItemText 
-                  primary={`${user?.firstName} ${user?.lastName}`}
-                  secondary={user?.email}
-                />
-                <Button
-                  size="small"
-                  color="error"
-                  variant="outlined"
-                  onClick={() => handleDenyUser(user._id)}
-                  disabled={loading}
-                >
-                  Deny
-                </Button>
+              <ListItem key={user._id} sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'stretch', sm: 'center' } }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  width: { xs: '100%', sm: 'auto' },
+                  flexGrow: 1
+                }}>
+                  <ListItemAvatar>
+                    <Avatar>{user?.firstName?.charAt(0) || 'U'}</Avatar>
+                  </ListItemAvatar>
+                  <ListItemText 
+                    primary={`${user?.firstName} ${user?.lastName}`}
+                    secondary={user?.email}
+                  />
+                </Box>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                  mt: { xs: 1, sm: 0 },
+                  ml: { xs: 7, sm: 0 }
+                }}>
+                  <Button
+                    size="small"
+                    color="error"
+                    variant="outlined"
+                    onClick={() => handleDenyUser(user._id)}
+                    disabled={loading}
+                  >
+                    Deny
+                  </Button>
+                </Box>
               </ListItem>
             ))}
           </List>
@@ -329,15 +519,28 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
           </Typography>
           <List dense>
             {event.waitlist?.map((user) => (
-              <ListItem key={user._id}>
-                <ListItemAvatar>
-                  <Avatar>{user?.firstName?.charAt(0) || 'U'}</Avatar>
-                </ListItemAvatar>
-                <ListItemText 
-                  primary={`${user?.firstName} ${user?.lastName}`}
-                  secondary={user?.email}
-                />
-                <Box sx={{ display: 'flex', gap: 1 }}>
+              <ListItem key={user._id} sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'stretch', sm: 'center' } }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  width: { xs: '100%', sm: 'auto' },
+                  flexGrow: 1
+                }}>
+                  <ListItemAvatar>
+                    <Avatar>{user?.firstName?.charAt(0) || 'U'}</Avatar>
+                  </ListItemAvatar>
+                  <ListItemText 
+                    primary={`${user?.firstName} ${user?.lastName}`}
+                    secondary={user?.email}
+                  />
+                </Box>
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 1,
+                  justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                  mt: { xs: 1, sm: 0 },
+                  ml: { xs: 7, sm: 0 }
+                }}>
                   <Button
                     size="small"
                     variant="contained"
@@ -368,21 +571,35 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
               </Typography>
               <List dense>
                 {event.noGoList?.map((user) => (
-                  <ListItem key={user._id}>
-                    <ListItemAvatar>
-                      <Avatar>{user?.firstName?.charAt(0) || 'U'}</Avatar>
-                    </ListItemAvatar>
-                                    <ListItemText 
-                  primary={`${user?.firstName} ${user?.lastName}`}
-                  secondary={user?.email}
-                />
-                    <Button
-                      size="small"
-                      onClick={() => handleMoveToWaitlist(user._id)}
-                      disabled={loading}
-                    >
-                      Move to Waitlist
-                    </Button>
+                  <ListItem key={user._id} sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'stretch', sm: 'center' } }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      width: { xs: '100%', sm: 'auto' },
+                      flexGrow: 1
+                    }}>
+                      <ListItemAvatar>
+                        <Avatar>{user?.firstName?.charAt(0) || 'U'}</Avatar>
+                      </ListItemAvatar>
+                      <ListItemText 
+                        primary={`${user?.firstName} ${user?.lastName}`}
+                        secondary={user?.email}
+                      />
+                    </Box>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                      mt: { xs: 1, sm: 0 },
+                      ml: { xs: 7, sm: 0 }
+                    }}>
+                      <Button
+                        size="small"
+                        onClick={() => handleMoveToWaitlist(user._id)}
+                        disabled={loading}
+                      >
+                        Move to Waitlist
+                      </Button>
+                    </Box>
                   </ListItem>
                 ))}
               </List>

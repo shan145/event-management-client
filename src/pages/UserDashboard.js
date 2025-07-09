@@ -87,7 +87,7 @@ const UserDashboard = () => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             My Dashboard
           </Typography>
-          <Typography variant="body2" sx={{ mr: 2 }}>
+          <Typography variant="body2" sx={{ mr: 2, display: { xs: 'none', md: 'block' } }}>
             Welcome, {user?.firstName} {user?.lastName}
           </Typography>
           <IconButton onClick={handleMenuOpen} color="inherit">
@@ -117,7 +117,7 @@ const UserDashboard = () => {
           textAlign: 'center'
         }}>
           <Typography variant="h4" gutterBottom>
-            Welcome to Eventify!
+            Eventify
           </Typography>
           <Typography variant="body1" color="text.secondary">
             Manage your groups and events, join waitlists, and stay connected with your community.
@@ -164,7 +164,7 @@ const UserDashboard = () => {
             ) : (
               <Grid container spacing={3}>
                 {userGroups.map((group) => (
-                  <Grid item xs={12} sm={6} md={4} key={group._id}>
+                  <Grid item xs={12} sm={6} md={3} key={group._id}>
                     <GroupCard
                       group={group}
                       onUpdate={fetchUserData}
@@ -206,14 +206,14 @@ const UserDashboard = () => {
             ) : (
               <Grid container spacing={3}>
                 {userEvents.map((event) => (
-                  <Grid item xs={12} sm={6} md={4} key={event._id}>
-                    <EventCard
-                      event={event}
-                      onUpdate={fetchUserData}
-                      userRole={user.role}
-                      currentUserId={user._id}
-                    />
-                  </Grid>
+                                                                     <Grid item xs={12} sm={6} md={3} key={event._id} sx={{ minWidth: 0, maxWidth: '100%' }}>
+                   <EventCard
+                     event={event}
+                     onUpdate={fetchUserData}
+                     userRole={user.role}
+                     currentUserId={user._id}
+                   />
+                 </Grid>
                 ))}
               </Grid>
             )}

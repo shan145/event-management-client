@@ -123,7 +123,7 @@ const AdminDashboard = () => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
-          <Typography variant="body2" sx={{ mr: 2 }}>
+          <Typography variant="body2" sx={{ mr: 2, display: { xs: 'none', md: 'block' } }}>
             Welcome, {user?.firstName} {user?.lastName}
           </Typography>
           <IconButton onClick={handleMenuOpen} color="inherit">
@@ -176,7 +176,7 @@ const AdminDashboard = () => {
             
             <Grid container spacing={3}>
               {groups.map((group) => (
-                <Grid item xs={12} sm={6} md={4} key={group._id}>
+                <Grid item xs={12} sm={6} md={3} key={group._id}>
                   <GroupCard
                     group={group}
                     onUpdate={fetchData}
@@ -194,19 +194,19 @@ const AdminDashboard = () => {
         {activeTab === 1 && (
           <Box>
             <Typography variant="h4" sx={{ mb: 3 }}>Events</Typography>
-            <Grid container spacing={3}>
-              {events.map((event) => (
-                <Grid item xs={12} sm={6} md={4} key={event._id}>
-                  <EventCard
-                    event={event}
-                    onUpdate={fetchData}
-                    onDelete={handleDeleteEvent}
-                    userRole={user.role}
-                    currentUserId={user._id}
-                  />
-                </Grid>
-              ))}
-            </Grid>
+                          <Grid container spacing={3}>
+                {events.map((event) => (
+                  <Grid item xs={12} sm={6} md={3} key={event._id} sx={{ minWidth: 0, maxWidth: '100%' }}>
+                    <EventCard
+                      event={event}
+                      onUpdate={fetchData}
+                      onDelete={handleDeleteEvent}
+                      userRole={user.role}
+                      currentUserId={user._id}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
           </Box>
         )}
 
@@ -216,7 +216,7 @@ const AdminDashboard = () => {
             <Typography variant="h4" sx={{ mb: 3 }}>Users</Typography>
             <Grid container spacing={3}>
               {users.map((userItem) => (
-                <Grid item xs={12} sm={6} md={4} key={userItem._id}>
+                <Grid item xs={12} sm={6} md={3} key={userItem._id}>
                   <Paper sx={{ 
                     p: 3,
                     bgcolor: '#fefefe',
