@@ -358,39 +358,25 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
               margin: 0,
               padding: 0
             }}>
-              {!isGoing && !isWaitlisted && !isNoGo && (
-                <>
-                  <Button
-                    size="small"
-                    startIcon={<PersonAdd />}
-                    onClick={handleJoinWaitlist}
-                    disabled={loading}
-                    sx={{ 
-                      margin: 0,
-                      padding: '6px 16px',
-                      minWidth: 0
-                    }}
-                  >
-                    Join Waitlist
-                  </Button>
-                  <Button
-                    size="small"
-                    startIcon={<Cancel />}
-                    onClick={handleNotGoing}
-                    disabled={loading}
-                    color="error"
-                    sx={{ 
-                      margin: 0,
-                      padding: '6px 16px',
-                      minWidth: 0
-                    }}
-                  >
-                    Not Going
-                  </Button>
-                </>
+              {/* Join Waitlist button - available for users who haven't responded or are marked as not going */}
+              {(!isGoing && !isWaitlisted) && (
+                <Button
+                  size="small"
+                  startIcon={<PersonAdd />}
+                  onClick={handleJoinWaitlist}
+                  disabled={loading}
+                  sx={{ 
+                    margin: 0,
+                    padding: '6px 16px',
+                    minWidth: 0
+                  }}
+                >
+                  Join Waitlist
+                </Button>
               )}
               
-              {(isGoing || isWaitlisted) && (
+              {/* Not Going button - available for everyone except those already marked as not going */}
+              {!isNoGo && (
                 <Button
                   size="small"
                   startIcon={<Cancel />}
