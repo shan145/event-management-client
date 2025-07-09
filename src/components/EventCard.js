@@ -35,6 +35,12 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Configure dayjs with timezone support
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
   const [showWaitlistDialog, setShowWaitlistDialog] = useState(false);
@@ -133,14 +139,11 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
   };
 
   const handleEditEvent = () => {
-    // Format the date for the date input (YYYY-MM-DD) using local timezone
-    const eventDate = new Date(event.date);
-    const year = eventDate.getFullYear();
-    const month = String(eventDate.getMonth() + 1).padStart(2, '0');
-    const day = String(eventDate.getDate()).padStart(2, '0');
-    const formattedDate = `${year}-${month}-${day}`;
+    // Format the date for the date input (YYYY-MM-DD) using Eastern Time
+    const eventDateET = dayjs(event.date).tz('America/New_York');
+    const formattedDate = eventDateET.format('YYYY-MM-DD');
     
-    // Format the time for the time input (HH:MM)
+    // Format the time for the time input (HH:MM) - use the time from the event in ET
     const formattedTime = event.time || '12:00';
     
     setEditData({
@@ -299,7 +302,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
             <Schedule sx={{ fontSize: 16, color: 'text.secondary' }} />
             <Typography variant="body2" color="text.secondary">
-              {dayjs(event.date).format('MMM DD, YYYY h:mm A')}
+              {dayjs(event.date).tz('America/New_York').format('MMM DD, YYYY h:mm A')} ET
             </Typography>
           </Box>
           

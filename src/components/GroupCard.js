@@ -25,6 +25,13 @@ import {
   Add,
 } from '@mui/icons-material';
 import axios from 'axios';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Configure dayjs with timezone support
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
