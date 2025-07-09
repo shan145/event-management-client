@@ -204,9 +204,9 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
         flexDirection: 'column',
         bgcolor: '#fefefe',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)',
-        maxWidth: '420px', // Fixed width based on ~60 characters
-        minWidth: '420px',
-        width: '420px',
+        maxWidth: '350px', // Fixed width based on ~50 characters
+        minWidth: '350px',
+        width: '350px',
         overflow: 'hidden',
         wordBreak: 'break-word',
         '&:hover': {
@@ -241,11 +241,11 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
                 lineHeight: 1.2
               }}
             >
-              {event.title && event.title.length > 60 && !showFullTitle
-                ? `${event.title.substring(0, 60)}...`
+              {event.title && event.title.length > 50 && !showFullTitle
+                ? `${event.title.substring(0, 50)}...`
                 : event.title}
             </Typography>
-            {event.title && event.title.length > 60 && (
+            {event.title && event.title.length > 50 && (
               <Button
                 size="small"
                 onClick={() => setShowFullTitle(!showFullTitle)}
@@ -275,11 +275,11 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
                 whiteSpace: 'pre-line' // Preserve line breaks
               }}
             >
-              {event.description && event.description.length > 60 && !showFullDescription
-                ? `${event.description.substring(0, 60)}...`
+              {event.description && event.description.length > 50 && !showFullDescription
+                ? `${event.description.substring(0, 50)}...`
                 : event.description}
             </Typography>
-            {event.description && event.description.length > 60 && (
+            {event.description && event.description.length > 50 && (
               <Button
                 size="small"
                 onClick={() => setShowFullDescription(!showFullDescription)}
