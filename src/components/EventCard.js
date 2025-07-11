@@ -47,12 +47,14 @@ dayjs.extend(timezone);
 const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
   const [showWaitlistDialog, setShowWaitlistDialog] = useState(false);
   const [showAttendeesDialog, setShowAttendeesDialog] = useState(false);
+  const [showUserAttendeesDialog, setShowUserAttendeesDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showFullTitle, setShowFullTitle] = useState(false);
+  const [attendeesList, setAttendeesList] = useState([]);
   const [editData, setEditData] = useState({
     title: '',
     description: '',
@@ -190,6 +192,20 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
       } catch (error) {
         setError('Failed to delete event');
       }
+    }
+  };
+
+  const handleViewAttendees = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await axios.get(`/events/${event._id}/attendees`);
+      setAttendeesList(response.data.data.attendees);
+      setShowUserAttendeesDialog(true);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to load attendees');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -464,6 +480,33 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
               </Button>
             </Box>
           )}
+
+          {/* Non-admin Attendee Actions Row */}
+          {!isAdmin && isGoing && (
+            <Box sx={{ 
+              display: 'flex', 
+              width: '100%', 
+              justifyContent: 'flex-start', 
+              alignItems: 'center',
+              gap: 1,
+              margin: 0,
+              padding: 0
+            }}>
+              <Button
+                size="small"
+                startIcon={<Visibility />}
+                onClick={handleViewAttendees}
+                disabled={loading}
+                sx={{ 
+                  margin: 0,
+                  padding: '6px 16px',
+                  minWidth: 0
+                }}
+              >
+                View Attendees
+              </Button>
+            </Box>
+          )}
         </CardActions>
       </Card>
 
@@ -730,6 +773,54 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
           console.log('Email sent successfully');
         }}
       />
+
+      {/* User Attendees Dialog (Non-admin view) */}
+      <Dialog 
+        open={showUserAttendeesDialog} 
+        onClose={() => setShowUserAttendeesDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Who's Going
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {event.title}
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          
+          <Typography variant="h6" sx={{ mb: 2, color: 'success.main' }}>
+            Confirmed Attendees ({attendeesList.length})
+          </Typography>
+          
+          {attendeesList.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              No confirmed attendees yet.
+            </Typography>
+          ) : (
+                         <List dense>
+               {attendeesList.map((user) => (
+                 <ListItem key={user._id}>
+                   <ListItemAvatar>
+                     <Avatar>{user?.firstName?.charAt(0) || 'U'}</Avatar>
+                   </ListItemAvatar>
+                   <ListItemText 
+                     primary={`${user?.firstName} ${user?.lastName}`}
+                   />
+                 </ListItem>
+               ))}
+             </List>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowUserAttendeesDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
