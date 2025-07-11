@@ -32,7 +32,9 @@ import {
   Delete,
   Visibility,
   Edit,
+  Email,
 } from '@mui/icons-material';
+import EmailDialog from './EmailDialog';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -46,6 +48,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
   const [showWaitlistDialog, setShowWaitlistDialog] = useState(false);
   const [showAttendeesDialog, setShowAttendeesDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -57,6 +60,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
     time: '',
     location: '',
     maxAttendees: '',
+    guests: '',
   });
 
   const isAdmin = userRole === 'admin';
@@ -153,6 +157,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
       time: formattedTime,
       location: event.location || '',
       maxAttendees: event.maxAttendees || '',
+      guests: event.guests || '',
     });
     setShowEditDialog(true);
   };
@@ -165,6 +170,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
       const response = await axios.put(`/events/${event._id}`, {
         ...editData,
         maxAttendees: editData.maxAttendees ? parseInt(editData.maxAttendees) : null,
+        guests: editData.guests ? parseInt(editData.guests) : 0,
       });
       
       setShowEditDialog(false);
@@ -326,7 +332,8 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <People sx={{ fontSize: 16, color: 'text.secondary' }} />
             <Typography variant="body2" color="text.secondary">
-              {event.goingList?.length || 0} going • {event.waitlist?.length || 0} waitlisted
+              {(event.goingList?.length || 0) + (event.guests || 0)} total 
+              ({event.goingList?.length || 0} going{event.guests ? ` + ${event.guests} guests` : ''}) • {event.waitlist?.length || 0} waitlisted
             </Typography>
           </Box>
         </CardContent>
@@ -426,6 +433,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
               width: '100%', 
               justifyContent: 'flex-start', 
               alignItems: 'center',
+              gap: 1,
               margin: 0,
               padding: 0
             }}>
@@ -441,6 +449,19 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
               >
                 View Attendees
               </Button>
+              <Button
+                size="small"
+                startIcon={<Email />}
+                onClick={() => setShowEmailDialog(true)}
+                sx={{ 
+                  margin: 0,
+                  padding: '6px 16px',
+                  minWidth: 0
+                }}
+                disabled={(event.goingList?.length || 0) === 0}
+              >
+                Send Email
+              </Button>
             </Box>
           )}
         </CardActions>
@@ -453,7 +474,15 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Event Attendees</DialogTitle>
+        <DialogTitle>
+          Event Attendees 
+          {event.guests > 0 && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Total: {(event.goingList?.length || 0) + (event.guests || 0)} attendees 
+              ({event.goingList?.length || 0} users + {event.guests} guests)
+            </Typography>
+          )}
+        </DialogTitle>
         <DialogContent>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -668,6 +697,16 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
             InputProps={{ inputProps: { min: 1 } }}
             helperText="Leave empty for unlimited attendees"
           />
+          <TextField
+            fullWidth
+            label="Number of Guests (optional)"
+            type="number"
+            value={editData.guests}
+            onChange={(e) => setEditData({ ...editData, guests: e.target.value })}
+            margin="normal"
+            InputProps={{ inputProps: { min: 0 } }}
+            helperText="Additional attendees not on the user list (default: 0)"
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowEditDialog(false)}>Cancel</Button>
@@ -680,6 +719,17 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Email Dialog */}
+      <EmailDialog
+        open={showEmailDialog}
+        onClose={() => setShowEmailDialog(false)}
+        event={event}
+        onSuccess={() => {
+          // Optional: You can add success handling here
+          console.log('Email sent successfully');
+        }}
+      />
     </>
   );
 };

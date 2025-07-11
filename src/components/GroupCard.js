@@ -14,6 +14,8 @@ import {
   DialogActions,
   TextField,
   Alert,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import {
   Group,
@@ -23,7 +25,9 @@ import {
   Edit,
   Share,
   Add,
+  Email,
 } from '@mui/icons-material';
+import GroupEmailDialog from './GroupEmailDialog';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -36,6 +40,7 @@ dayjs.extend(timezone);
 const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showEventDialog, setShowEventDialog] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showFullName, setShowFullName] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [eventData, setEventData] = useState({
@@ -44,6 +49,8 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
     date: '',
     time: '',
     location: '',
+    guests: '',
+    notifyGroup: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -72,7 +79,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
       });
       
       setShowEventDialog(false);
-      setEventData({ title: '', description: '', date: '', time: '', location: '' });
+      setEventData({ title: '', description: '', date: '', time: '', location: '', guests: '', notifyGroup: false });
       if (onUpdate) onUpdate();
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create event');
@@ -221,23 +228,34 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
         </CardContent>
         
         <CardActions sx={{ justifyContent: 'space-between', p: 3, pt: 0 }}>
-          <Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {isAdmin && (
               <>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    size="small"
+                    startIcon={<Add />}
+                    onClick={() => setShowEventDialog(true)}
+                  >
+                    Add Event
+                  </Button>
+                  <Button
+                    size="small"
+                    startIcon={<Share />}
+                    onClick={handleGenerateInvite}
+                    disabled={loading}
+                  >
+                    Invite
+                  </Button>
+                </Box>
                 <Button
                   size="small"
-                  startIcon={<Add />}
-                  onClick={() => setShowEventDialog(true)}
+                  startIcon={<Email />}
+                  onClick={() => setShowEmailDialog(true)}
+                  disabled={!group.members || group.members.length === 0}
+                  sx={{ alignSelf: 'flex-start' }}
                 >
-                  Add Event
-                </Button>
-                <Button
-                  size="small"
-                  startIcon={<Share />}
-                  onClick={handleGenerateInvite}
-                  disabled={loading}
-                >
-                  Invite
+                  Send Message
                 </Button>
               </>
             )}
@@ -336,6 +354,29 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
             onChange={(e) => setEventData({ ...eventData, location: e.target.value })}
             margin="normal"
           />
+          
+          <TextField
+            fullWidth
+            label="Number of Guests (optional)"
+            type="number"
+            value={eventData.guests}
+            onChange={(e) => setEventData({ ...eventData, guests: e.target.value })}
+            margin="normal"
+            InputProps={{ inputProps: { min: 0 } }}
+            helperText="Additional attendees not on the user list (default: 0)"
+          />
+          
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={eventData.notifyGroup}
+                onChange={(e) => setEventData({ ...eventData, notifyGroup: e.target.checked })}
+                color="primary"
+              />
+            }
+            label="📧 Notify all group members about this event"
+            sx={{ mt: 2, mb: 1 }}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowEventDialog(false)}>Cancel</Button>
@@ -348,6 +389,16 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Group Email Dialog */}
+      <GroupEmailDialog
+        open={showEmailDialog}
+        onClose={() => setShowEmailDialog(false)}
+        group={group}
+        onSuccess={() => {
+          console.log('Group email sent successfully');
+        }}
+      />
     </>
   );
 };
