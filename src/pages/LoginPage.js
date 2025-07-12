@@ -7,11 +7,12 @@ import {
   TextField,
   Button,
   Container,
-  Paper,
+  Card,
   Alert,
   Link as MuiLink,
+  IconButton,
 } from '@mui/material';
-import { Login as LoginIcon } from '@mui/icons-material';
+import { ArrowBack } from '@mui/icons-material';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const LoginPage = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        background: 'linear-gradient(180deg, #ffffff 0%, #fafafa 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -53,75 +54,133 @@ const LoginPage = () => {
       }}
     >
       <Container maxWidth="sm">
-        <Paper
-          elevation={3}
+        {/* Header */}
+        <Box sx={{ mb: 4 }}>
+          <IconButton
+            onClick={() => navigate('/')}
+            sx={{ mb: 2 }}
+          >
+            <ArrowBack />
+          </IconButton>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+            Eventify
+          </Typography>
+        </Box>
+
+        <Card
           sx={{
-            p: 4,
-            borderRadius: 3,
-            background: 'rgba(255, 255, 255, 0.95)',
+            p: 6,
+            maxWidth: 400,
+            mx: 'auto',
+            border: '1px solid #e1e1e1',
           }}
         >
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <LoginIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-            <Typography variant="h4" component="h1" gutterBottom>
-              Welcome Back
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h4" component="h1" sx={{ mb: 2, fontWeight: 600 }}>
+              Welcome back
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Sign in to your account
+              Sign in to your account to continue
             </Typography>
           </Box>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 3,
+                '& .MuiAlert-message': {
+                  fontSize: '0.875rem',
+                },
+              }}
+            >
               {error}
             </Alert>
           )}
 
           <Box component="form" onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="Email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              margin="normal"
-              required
-              autoComplete="email"
-              autoFocus
-            />
-            <TextField
-              fullWidth
-              label="Password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              margin="normal"
-              required
-              autoComplete="current-password"
-            />
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                Email
+              </Typography>
+              <TextField
+                fullWidth
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                autoComplete="email"
+                autoFocus
+                placeholder="Enter your email"
+                variant="outlined"
+                sx={{ 
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+            </Box>
+
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                Password
+              </Typography>
+              <TextField
+                fullWidth
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                variant="outlined"
+                sx={{ 
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+            </Box>
+
             <Button
               type="submit"
               fullWidth
               variant="contained"
               size="large"
               disabled={loading}
-              sx={{ mt: 3, mb: 2, py: 1.5 }}
+              sx={{ 
+                mb: 3,
+                py: 1.5,
+                fontSize: '0.875rem',
+                fontWeight: 500,
+              }}
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading ? 'Signing in...' : 'Sign in'}
             </Button>
           </Box>
 
-          <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e1e1e1' }}>
             <Typography variant="body2" color="text.secondary">
               Don't have an account?{' '}
-              <MuiLink component={Link} to="/signup" variant="body2">
-                Sign up here
+              <MuiLink 
+                component={Link} 
+                to="/signup" 
+                sx={{ 
+                  color: 'text.primary',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
+                }}
+              >
+                Sign up
               </MuiLink>
             </Typography>
           </Box>
-        </Paper>
+        </Card>
       </Container>
     </Box>
   );

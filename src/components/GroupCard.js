@@ -113,17 +113,17 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
         height: '100%', 
         display: 'flex', 
         flexDirection: 'column',
-        bgcolor: '#fefefe',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)',
-        maxWidth: '320px', // Fixed width based on ~40 characters
+        border: '1px solid #e1e1e1',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        maxWidth: '320px',
         minWidth: '320px',
         width: '320px',
         overflow: 'hidden',
         wordBreak: 'break-word',
         '&:hover': {
-          bgcolor: '#fafafa',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08)',
-          transition: 'all 0.3s ease-in-out'
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          transform: 'translateY(-2px)',
+          transition: 'all 0.2s ease-in-out'
         }
       }}>
         <CardContent sx={{ 
@@ -141,30 +141,36 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
                 variant="h6" 
                 component="h3" 
                 sx={{
+                  fontWeight: 600,
+                  fontSize: '1.125rem',
+                  lineHeight: 1.4,
                   wordWrap: 'break-word',
                   overflowWrap: 'break-word',
-                  hyphens: 'auto',
                   maxWidth: '100%',
-                  lineHeight: 1.2
+                  mb: 1
                 }}
               >
-                {group.name && group.name.length > 40 && !showFullName
-                  ? `${group.name.substring(0, 40)}...`
+                {group.name && group.name.length > 35 && !showFullName
+                  ? `${group.name.substring(0, 35)}...`
                   : group.name}
               </Typography>
-              {group.name && group.name.length > 40 && (
+              {group.name && group.name.length > 35 && (
                 <Button
                   size="small"
                   onClick={() => setShowFullName(!showFullName)}
                   sx={{ 
-                    p: 0, 
-                    mt: 0.5,
+                    p: 0,
                     minWidth: 'auto',
                     textTransform: 'none',
-                    fontSize: '0.75rem'
+                    fontSize: '0.75rem',
+                    color: 'text.secondary',
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                      color: 'primary.main'
+                    }
                   }}
                 >
-                  {showFullName ? 'Show Less' : 'Show More'}
+                  {showFullName ? 'Show less' : 'Show more'}
                 </Button>
               )}
             </Box>
@@ -173,57 +179,66 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
                 label="Admin" 
                 size="small" 
                 color="primary" 
-                variant="outlined" 
+                variant="outlined"
+                sx={{ fontWeight: 500 }}
               />
             )}
           </Box>
           
-          <Box sx={{ mb: 2 }}>
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
-              sx={{ 
-                wordWrap: 'break-word',
-                overflowWrap: 'break-word',
-                hyphens: 'auto',
-                lineHeight: 1.5,
-                maxWidth: '100%',
-                whiteSpace: 'pre-line'
-              }}
-            >
-              {group.description && group.description.length > 40 && !showFullDescription
-                ? `${group.description.substring(0, 40)}...`
-                : group.description}
-            </Typography>
-            {group.description && group.description.length > 40 && (
-              <Button
-                size="small"
-                onClick={() => setShowFullDescription(!showFullDescription)}
+          {group.description && (
+            <Box sx={{ mb: 3 }}>
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
                 sx={{ 
-                  p: 0, 
-                  mt: 0.5,
-                  minWidth: 'auto',
-                  textTransform: 'none',
-                  fontSize: '0.75rem'
+                  lineHeight: 1.5,
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  maxWidth: '100%',
+                  whiteSpace: 'pre-line'
                 }}
               >
-                {showFullDescription ? 'Show Less' : 'Show More'}
-              </Button>
-            )}
-          </Box>
+                {group.description.length > 60 && !showFullDescription
+                  ? `${group.description.substring(0, 60)}...`
+                  : group.description}
+              </Typography>
+              {group.description.length > 60 && (
+                <Button
+                  size="small"
+                  onClick={() => setShowFullDescription(!showFullDescription)}
+                  sx={{ 
+                    p: 0,
+                    mt: 0.5,
+                    minWidth: 'auto',
+                    textTransform: 'none',
+                    fontSize: '0.75rem',
+                    color: 'text.secondary',
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                      color: 'primary.main'
+                    }
+                  }}
+                >
+                  {showFullDescription ? 'Show less' : 'Show more'}
+                </Button>
+              )}
+            </Box>
+          )}
           
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <People sx={{ fontSize: 16, color: 'text.secondary' }} />
-            <Typography variant="body2" color="text.secondary">
-              {group.members?.length || 0} members
-            </Typography>
-          </Box>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Event sx={{ fontSize: 16, color: 'text.secondary' }} />
-            <Typography variant="body2" color="text.secondary">
-              {group.eventCount || 0} events
-            </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <People sx={{ fontSize: 18, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                {group.members?.length || 0} members
+              </Typography>
+            </Box>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Event sx={{ fontSize: 18, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                {group.eventCount || 0} events
+              </Typography>
+            </Box>
           </Box>
         </CardContent>
         

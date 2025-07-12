@@ -15,12 +15,19 @@ import {
   Tabs,
   Tab,
   Alert,
+  Avatar,
+  Button,
+  Card,
+  CardContent,
 } from '@mui/material';
 import {
   Group,
   Event,
   Dashboard,
   People,
+  LogoutOutlined,
+  HomeOutlined,
+  MoreVert,
 } from '@mui/icons-material';
 import GroupCard from '../components/GroupCard';
 import EventCard from '../components/EventCard';
@@ -81,86 +88,134 @@ const UserDashboard = () => {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Header */}
-      <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', color: 'text.primary' }}>
-        <Toolbar>
-          <Dashboard sx={{ mr: 2 }} />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            My Dashboard
+      <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', borderBottom: '1px solid #e1e1e1' }}>
+        <Toolbar sx={{ py: 1 }}>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
+            Eventify
           </Typography>
-          <Typography variant="body2" sx={{ mr: 2, display: { xs: 'none', md: 'block' } }}>
-            Welcome, {user?.firstName} {user?.lastName}
-          </Typography>
-          <IconButton onClick={handleMenuOpen} color="inherit">
-            <People />
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-          >
-            <MenuItem onClick={() => navigate('/')}>Home</MenuItem>
-            <MenuItem onClick={handleLogout}>Logout</MenuItem>
-          </Menu>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
+              <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.875rem' }}>
+                {user?.firstName?.charAt(0)}
+              </Avatar>
+              <Typography variant="body2" color="text.primary">
+                {user?.firstName} {user?.lastName}
+              </Typography>
+            </Box>
+            
+            <IconButton onClick={handleMenuOpen} size="small">
+              <MoreVert />
+            </IconButton>
+            
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              PaperProps={{
+                sx: {
+                  mt: 1.5,
+                  minWidth: 200,
+                  '& .MuiMenuItem-root': {
+                    px: 2,
+                    py: 1.5,
+                    fontSize: '0.875rem',
+                  },
+                },
+              }}
+            >
+              <MenuItem onClick={() => navigate('/')}>
+                <HomeOutlined sx={{ mr: 2, fontSize: 20 }} />
+                Home
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>
+                <LogoutOutlined sx={{ mr: 2, fontSize: 20 }} />
+                Logout
+              </MenuItem>
+            </Menu>
+          </Box>
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 6 }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity="error" sx={{ mb: 4 }}>
             {error}
           </Alert>
         )}
 
         {/* Welcome Section */}
-        <Box sx={{ 
-          mb: 3, 
-          textAlign: 'center'
-        }}>
-          <Typography variant="h4" gutterBottom>
-            Eventify
+        <Box sx={{ mb: 6 }}>
+          <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
+            Welcome back, {user?.firstName}
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.125rem' }}>
             Manage your groups and events, join waitlists, and stay connected with your community.
           </Typography>
         </Box>
 
         {/* Tabs */}
-        <Paper sx={{ 
-          mb: 3,
-          bgcolor: '#fefefe',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)'
-        }}>
-          <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
-            <Tab label="My Groups" icon={<Group />} />
-            <Tab label="My Events" icon={<Event />} />
-          </Tabs>
-        </Paper>
+        <Box sx={{ mb: 6 }}>
+          <Box sx={{ borderBottom: '1px solid #e1e1e1' }}>
+            <Tabs 
+              value={activeTab} 
+              onChange={(e, newValue) => setActiveTab(newValue)}
+              sx={{
+                '& .MuiTabs-flexContainer': {
+                  gap: 4,
+                },
+                '& .MuiTab-root': {
+                  minHeight: 48,
+                  py: 1.5,
+                  px: 0,
+                },
+              }}
+            >
+              <Tab 
+                label="My Groups" 
+                icon={<Group />} 
+                iconPosition="start"
+                sx={{ gap: 1 }}
+              />
+              <Tab 
+                label="My Events" 
+                icon={<Event />} 
+                iconPosition="start"
+                sx={{ gap: 1 }}
+              />
+            </Tabs>
+          </Box>
+        </Box>
 
         {/* Groups Tab */}
         {activeTab === 0 && (
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h4">My Groups</Typography>
-              <Typography variant="body2" color="text.secondary">
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+              <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                My Groups
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
                 {userGroups.length} group{userGroups.length !== 1 ? 's' : ''}
               </Typography>
             </Box>
             
             {userGroups.length === 0 ? (
-              <Paper sx={{ 
-                p: 4, 
+              <Card sx={{ 
+                p: 6, 
                 textAlign: 'center',
-                bgcolor: '#fefefe',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)'
+                border: '1px solid #e1e1e1',
+                backgroundColor: '#fafafa',
               }}>
-                <Group sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  No Groups Yet
-                </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                  You haven't joined any groups yet. Ask an admin for an invite link!
-                </Typography>
-              </Paper>
+                <CardContent>
+                  <Group sx={{ fontSize: 48, color: 'text.secondary', mb: 3 }} />
+                  <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+                    No Groups Yet
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
+                    You haven't joined any groups yet. Ask an admin for an invite link to get started!
+                  </Typography>
+                </CardContent>
+              </Card>
             ) : (
               <Grid container spacing={3}>
                 {userGroups.map((group) => (
@@ -181,39 +236,43 @@ const UserDashboard = () => {
         {/* Events Tab */}
         {activeTab === 1 && (
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h4">My Events</Typography>
-              <Typography variant="body2" color="text.secondary">
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+              <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                My Events
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
                 {userEvents.length} event{userEvents.length !== 1 ? 's' : ''}
               </Typography>
             </Box>
             
             {userEvents.length === 0 ? (
-              <Paper sx={{ 
-                p: 4, 
+              <Card sx={{ 
+                p: 6, 
                 textAlign: 'center',
-                bgcolor: '#fefefe',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)'
+                border: '1px solid #e1e1e1',
+                backgroundColor: '#fafafa',
               }}>
-                <Event sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  No Events Yet
-                </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                  You haven't joined any events yet. Check your groups for upcoming events!
-                </Typography>
-              </Paper>
+                <CardContent>
+                  <Event sx={{ fontSize: 48, color: 'text.secondary', mb: 3 }} />
+                  <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+                    No Events Yet
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
+                    You haven't joined any events yet. Check your groups for upcoming events!
+                  </Typography>
+                </CardContent>
+              </Card>
             ) : (
               <Grid container spacing={3}>
                 {userEvents.map((event) => (
-                                                                     <Grid item xs={12} sm={6} md={3} key={event._id} sx={{ minWidth: 0, maxWidth: '100%' }}>
-                   <EventCard
-                     event={event}
-                     onUpdate={fetchUserData}
-                     userRole={user.role}
-                     currentUserId={user._id}
-                   />
-                 </Grid>
+                  <Grid item xs={12} sm={6} md={3} key={event._id} sx={{ minWidth: 0, maxWidth: '100%' }}>
+                    <EventCard
+                      event={event}
+                      onUpdate={fetchUserData}
+                      userRole={user.role}
+                      currentUserId={user._id}
+                    />
+                  </Grid>
                 ))}
               </Grid>
             )}
