@@ -71,10 +71,11 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
   const isWaitlisted = event.waitlist?.some(user => user._id === currentUserId);
   const isNoGo = event.noGoList?.some(user => user._id === currentUserId);
   
-  // Check group membership with fallback - if user can see/respond to event, they must be a member
+  // Check group membership with comprehensive fallback logic
   const isGroupMemberFromPopulation = event.groupId?.members?.some(member => member && member._id === currentUserId);
-  const isGroupMemberFallback = isGoing || isWaitlisted || isNoGo; // If user has responded, they must be a member
-  const isGroupMember = isGroupMemberFromPopulation || isGroupMemberFallback;
+  const isGroupMemberFromResponse = isGoing || isWaitlisted || isNoGo; // If user has responded, they must be a member
+  const isGroupMemberFromAccess = !!event.groupId; // If user can see the event, they must be a group member (events are group-specific)
+  const isGroupMember = isGroupMemberFromPopulation || isGroupMemberFromResponse || isGroupMemberFromAccess;
   
   // Debug logging
   console.log('Event data:', {
@@ -83,7 +84,8 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
     groupId: event.groupId?._id,
     groupMembers: event.groupId?.members?.map(m => m?._id || 'null'),
     isGroupMemberFromPopulation,
-    isGroupMemberFallback,
+    isGroupMemberFromResponse,
+    isGroupMemberFromAccess,
     isGroupMember,
     isAdmin,
     isGoing
@@ -408,133 +410,84 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
             padding: 0
           }
         }}>
-          {/* User Response Actions Row */}
+          {/* User Response Actions */}
           <Box sx={{ 
             display: 'flex', 
+            flexDirection: 'column',
             width: '100%', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
+            alignItems: 'flex-start',
+            gap: 1,
             margin: 0,
             padding: 0
           }}>
-            <Box sx={{ 
-              display: 'flex', 
-              gap: 1, 
-              flexWrap: 'wrap',
-              margin: 0,
-              padding: 0
-            }}>
-              {/* Join Waitlist button - available for users who haven't responded or are marked as not going */}
-              {(!isGoing && !isWaitlisted) && (
-                <Button
-                  size="small"
-                  startIcon={<PersonAdd />}
-                  onClick={handleJoinWaitlist}
-                  disabled={loading}
-                  sx={{ 
-                    margin: 0,
-                    padding: '6px 16px',
-                    minWidth: 0
-                  }}
-                >
-                  Join Waitlist
-                </Button>
-              )}
-              
-              {/* Not Going button - available for everyone except those already marked as not going */}
-              {!isNoGo && (
-                <Button
-                  size="small"
-                  startIcon={<Cancel />}
-                  onClick={handleNotGoingClick}
-                  disabled={loading}
-                  color="error"
-                  sx={{ 
-                    margin: 0,
-                    padding: '6px 16px',
-                    minWidth: 0
-                  }}
-                >
-                  Not Going
-                </Button>
-              )}
-            </Box>
-            
-            {isAdmin && (
-              <Box sx={{ 
-                display: 'flex', 
-                gap: 1,
-                margin: 0,
-                padding: 0
-              }}>
-                <IconButton
-                  size="small"
-                  color="primary"
-                  onClick={handleEditEvent}
-                >
-                  <Edit />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  color="error"
-                  onClick={handleDeleteEvent}
-                >
-                  <Delete />
-                </IconButton>
-              </Box>
+            {/* Join Waitlist button - available for users who haven't responded or are marked as not going */}
+            {(!isGoing && !isWaitlisted) && (
+              <Button
+                size="small"
+                startIcon={<PersonAdd />}
+                onClick={handleJoinWaitlist}
+                disabled={loading}
+                sx={{ 
+                  margin: 0,
+                  padding: '6px 16px',
+                  minWidth: 0
+                }}
+              >
+                Join Waitlist
+              </Button>
             )}
-          </Box>
-          
-          {/* Admin Actions Row */}
-          {isAdmin && (
-            <Box sx={{ 
-              display: 'flex', 
-              width: '100%', 
-              justifyContent: 'flex-start', 
-              alignItems: 'center',
-              gap: 1,
-              margin: 0,
-              padding: 0
-            }}>
+            
+            {/* Not Going button - available for everyone except those already marked as not going */}
+            {!isNoGo && (
               <Button
                 size="small"
-                startIcon={<Visibility />}
-                onClick={() => setShowAttendeesDialog(true)}
+                startIcon={<Cancel />}
+                onClick={handleNotGoingClick}
+                disabled={loading}
+                color="error"
                 sx={{ 
                   margin: 0,
                   padding: '6px 16px',
                   minWidth: 0
                 }}
               >
-                View Attendees
+                Not Going
               </Button>
-              <Button
-                size="small"
-                startIcon={<Email />}
-                onClick={() => setShowEmailDialog(true)}
-                sx={{ 
-                  margin: 0,
-                  padding: '6px 16px',
-                  minWidth: 0
-                }}
-                disabled={(event.goingList?.length || 0) === 0}
-              >
-                Send Email
-              </Button>
-            </Box>
-          )}
+            )}
+            
+            {/* Admin Actions */}
+            {isAdmin && (
+              <>
+                <Button
+                  size="small"
+                  startIcon={<Visibility />}
+                  onClick={() => setShowAttendeesDialog(true)}
+                  sx={{ 
+                    margin: 0,
+                    padding: '6px 16px',
+                    minWidth: 0
+                  }}
+                >
+                  View Attendees
+                </Button>
+                <Button
+                  size="small"
+                  startIcon={<Email />}
+                  onClick={() => setShowEmailDialog(true)}
+                  sx={{ 
+                    margin: 0,
+                    padding: '6px 16px',
+                    minWidth: 0
+                  }}
+                  disabled={(event.goingList?.length || 0) === 0}
+                >
+                  Send Email
+                </Button>
+              </>
+            )}
 
-          {/* Non-admin Group Member Actions Row */}
-          {!isAdmin && isGroupMember && (
-            <Box sx={{ 
-              display: 'flex', 
-              width: '100%', 
-              justifyContent: 'flex-start', 
-              alignItems: 'center',
-              gap: 1,
-              margin: 0,
-              padding: 0
-            }}>
+            {/* Non-admin Group Member Actions */}
+            {!isAdmin && isGroupMember && (
               <Button
                 size="small"
                 startIcon={<Visibility />}
@@ -548,6 +501,33 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
               >
                 View Attendees
               </Button>
+            )}
+          </Box>
+          
+          {/* Admin Edit/Delete Actions */}
+          {isAdmin && (
+            <Box sx={{ 
+              display: 'flex', 
+              width: '100%',
+              justifyContent: 'flex-end',
+              gap: 1,
+              margin: 0,
+              padding: 0
+            }}>
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={handleEditEvent}
+              >
+                <Edit />
+              </IconButton>
+              <IconButton
+                size="small"
+                color="error"
+                onClick={handleDeleteEvent}
+              >
+                <Delete />
+              </IconButton>
             </Box>
           )}
         </CardActions>

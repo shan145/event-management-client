@@ -242,48 +242,58 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
           </Box>
         </CardContent>
         
-        <CardActions sx={{ justifyContent: 'space-between', p: 3, pt: 0 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {isAdmin && (
-              <>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    size="small"
-                    startIcon={<Add />}
-                    onClick={() => setShowEventDialog(true)}
-                  >
-                    Add Event
-                  </Button>
-                  <Button
-                    size="small"
-                    startIcon={<Share />}
-                    onClick={handleGenerateInvite}
-                    disabled={loading}
-                  >
-                    Invite
-                  </Button>
-                </Box>
-                <Button
-                  size="small"
-                  startIcon={<Email />}
-                  onClick={() => setShowEmailDialog(true)}
-                  disabled={!group.members || group.members.length === 0}
-                  sx={{ alignSelf: 'flex-start' }}
-                >
-                  Send Message
-                </Button>
-              </>
-            )}
-          </Box>
+        <CardActions sx={{ 
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          p: 3, 
+          pt: 0, 
+          gap: 1
+        }}>
+          {isAdmin && (
+            <>
+              <Button
+                size="small"
+                startIcon={<Add />}
+                onClick={() => setShowEventDialog(true)}
+                sx={{ alignSelf: 'flex-start' }}
+              >
+                Add Event
+              </Button>
+              <Button
+                size="small"
+                startIcon={<Share />}
+                onClick={handleGenerateInvite}
+                disabled={loading}
+                sx={{ alignSelf: 'flex-start' }}
+              >
+                Invite
+              </Button>
+              <Button
+                size="small"
+                startIcon={<Email />}
+                onClick={() => setShowEmailDialog(true)}
+                disabled={!group.members || group.members.length === 0}
+                sx={{ alignSelf: 'flex-start' }}
+              >
+                Send Message
+              </Button>
+            </>
+          )}
           
           {userRole === 'admin' && (
-            <IconButton
-              size="small"
-              color="error"
-              onClick={handleDeleteGroup}
-            >
-              <Delete />
-            </IconButton>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'flex-end',
+              width: '100%'
+            }}>
+              <IconButton
+                size="small"
+                color="error"
+                onClick={handleDeleteGroup}
+              >
+                <Delete />
+              </IconButton>
+            </Box>
           )}
         </CardActions>
       </Card>
