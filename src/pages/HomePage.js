@@ -6,10 +6,19 @@ import {
   Typography,
   Button,
   Container,
-  Paper,
   Stack,
+  Grid,
+  Card,
+  CardContent,
 } from '@mui/material';
-import { Group, Event } from '@mui/icons-material';
+import { 
+  Group, 
+  Event, 
+  ArrowRight,
+  CheckCircle,
+  People,
+  CalendarToday
+} from '@mui/icons-material';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -20,107 +29,250 @@ const HomePage = () => {
     navigate('/');
   };
 
+  const features = [
+    {
+      icon: <Group sx={{ fontSize: 32, color: 'primary.main' }} />,
+      title: 'Create Groups',
+      description: 'Organize your community into focused groups for better event management.'
+    },
+    {
+      icon: <Event sx={{ fontSize: 32, color: 'primary.main' }} />,
+      title: 'Plan Events',
+      description: 'Schedule events with detailed information, attendance tracking, and notifications.'
+    },
+    {
+      icon: <People sx={{ fontSize: 32, color: 'primary.main' }} />,
+      title: 'Manage Attendees',
+      description: 'Track RSVPs, manage waitlists, and communicate with confirmed attendees.'
+    },
+    {
+      icon: <CalendarToday sx={{ fontSize: 32, color: 'primary.main' }} />,
+      title: 'Stay Organized',
+      description: 'Keep track of all your events and group activities in one place.'
+    },
+  ];
+
   return (
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        background: 'linear-gradient(180deg, #ffffff 0%, #fafafa 100%)',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      <Container maxWidth="md">
-        <Paper
-          elevation={3}
+      {/* Background decoration */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            radial-gradient(circle at 25% 25%, rgba(0,0,0,0.05) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(0,0,0,0.05) 0%, transparent 50%)
+          `,
+          zIndex: 0,
+        }}
+      />
+      
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+        {/* Header */}
+        <Box
           sx={{
-            p: 6,
-            textAlign: 'center',
-            borderRadius: 4,
-            background: 'rgba(255, 255, 255, 0.95)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            py: 3,
+            borderBottom: '1px solid #e1e1e1',
+            mb: 6,
           }}
         >
           <Typography
-            variant="h1"
+            variant="h6"
             component="h1"
             sx={{
-              fontSize: { xs: '3rem', md: '4rem' },
-              fontWeight: 700,
-              mb: 2,
-              background: 'linear-gradient(45deg, #000 30%, #333 90%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              fontWeight: 600,
+              color: 'text.primary',
             }}
           >
             Eventify
           </Typography>
           
-          <Typography
-            variant="h5"
-            color="text.secondary"
-            sx={{ mb: 4, fontWeight: 300 }}
-          >
-            Organize events, manage groups, and bring people together
-          </Typography>
-
-          <Box sx={{ mb: 4 }}>
-            <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 3 }}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Group sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                <Typography variant="body2" color="text.secondary">
-                  Create & Manage Groups
-                </Typography>
-              </Box>
-              <Box sx={{ textAlign: 'center' }}>
-                <Event sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                <Typography variant="body2" color="text.secondary">
-                  Plan & Track Events
-                </Typography>
-              </Box>
-            </Stack>
-          </Box>
-
           {user ? (
-            <Stack direction="row" spacing={2} justifyContent="center">
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => navigate(user.role === 'admin' ? '/admin' : '/dashboard')}
-                sx={{ px: 4, py: 1.5 }}
-              >
-                Go to Dashboard
-              </Button>
+            <Stack direction="row" spacing={2}>
               <Button
                 variant="outlined"
-                size="large"
                 onClick={handleLogout}
-                sx={{ px: 4, py: 1.5 }}
+                size="small"
               >
                 Logout
               </Button>
-            </Stack>
-          ) : (
-            <Stack direction="row" spacing={2} justifyContent="center">
               <Button
                 variant="contained"
-                size="large"
+                onClick={() => navigate(user.role === 'admin' ? '/admin' : '/dashboard')}
+                size="small"
+                endIcon={<ArrowRight />}
+              >
+                Dashboard
+              </Button>
+            </Stack>
+          ) : (
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="outlined"
                 onClick={() => navigate('/login')}
-                sx={{ px: 4, py: 1.5 }}
+                size="small"
               >
                 Login
               </Button>
               <Button
-                variant="outlined"
-                size="large"
+                variant="contained"
                 onClick={() => navigate('/signup')}
-                sx={{ px: 4, py: 1.5 }}
+                size="small"
               >
                 Sign Up
               </Button>
             </Stack>
           )}
-        </Paper>
+        </Box>
+
+        {/* Hero Section */}
+        <Box sx={{ textAlign: 'center', mb: 8 }}>
+          <Typography
+            variant="h1"
+            component="h1"
+            sx={{
+              fontSize: { xs: '2.5rem', md: '3.5rem' },
+              fontWeight: 700,
+              mb: 3,
+              color: 'text.primary',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Event Management
+            <br />
+            <span style={{ color: '#666666' }}>Made Simple</span>
+          </Typography>
+          
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ 
+              mb: 4, 
+              fontSize: '1.125rem',
+              maxWidth: '600px',
+              mx: 'auto',
+              lineHeight: 1.6,
+            }}
+          >
+            Create groups, plan events, and manage attendees with our intuitive platform. 
+            Perfect for communities, organizations, and teams.
+          </Typography>
+
+          {!user && (
+            <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 6 }}>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => navigate('/signup')}
+                sx={{ px: 4, py: 1.5 }}
+                endIcon={<ArrowRight />}
+              >
+                Get Started
+              </Button>
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={() => navigate('/login')}
+                sx={{ px: 4, py: 1.5 }}
+              >
+                Sign In
+              </Button>
+            </Stack>
+          )}
+        </Box>
+
+        {/* Features Grid */}
+        <Grid 
+          container 
+          spacing={4} 
+          sx={{ 
+            mb: 8,
+            justifyContent: 'center',
+            alignItems: 'stretch'
+          }}
+        >
+          {features.map((feature, index) => (
+            <Grid 
+              item 
+              xs={12} 
+              sm={6} 
+              md={6} 
+              lg={3} 
+              key={index}
+              sx={{
+                display: 'flex',
+                justifyContent: 'center'
+              }}
+            >
+              <Card
+                sx={{
+                  height: '100%',
+                  width: '100%',
+                  maxWidth: '280px',
+                  p: 3,
+                  textAlign: 'center',
+                  border: '1px solid #e1e1e1',
+                  '&:hover': {
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 0 }}>
+                  <Box sx={{ mb: 2 }}>
+                    {feature.icon}
+                  </Box>
+                  <Typography variant="h6" component="h3" sx={{ mb: 1, fontWeight: 600 }}>
+                    {feature.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {feature.description}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* CTA Section */}
+        {!user && (
+          <Box
+            sx={{
+              textAlign: 'center',
+              py: 6,
+              borderTop: '1px solid #e1e1e1',
+              mt: 6,
+            }}
+          >
+            <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>
+              Ready to get started?
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+              Join thousands of organizers who trust Eventify for their events.
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => navigate('/signup')}
+              sx={{ px: 4, py: 1.5 }}
+              endIcon={<ArrowRight />}
+            >
+              Create Your Account
+            </Button>
+          </Box>
+        )}
       </Container>
     </Box>
   );

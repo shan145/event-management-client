@@ -7,12 +7,13 @@ import {
   TextField,
   Button,
   Container,
-  Paper,
+  Card,
   Alert,
   Link as MuiLink,
   Grid,
+  IconButton,
 } from '@mui/material';
-import { PersonAdd as SignupIcon } from '@mui/icons-material';
+import { ArrowBack } from '@mui/icons-material';
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ const SignupPage = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        background: 'linear-gradient(180deg, #ffffff 0%, #fafafa 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -75,109 +76,196 @@ const SignupPage = () => {
       }}
     >
       <Container maxWidth="sm">
-        <Paper
-          elevation={3}
+        {/* Header */}
+        <Box sx={{ mb: 4 }}>
+          <IconButton
+            onClick={() => navigate('/')}
+            sx={{ mb: 2 }}
+          >
+            <ArrowBack />
+          </IconButton>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+            Eventify
+          </Typography>
+        </Box>
+
+        <Card
           sx={{
-            p: 4,
-            borderRadius: 3,
-            background: 'rgba(255, 255, 255, 0.95)',
+            p: 6,
+            maxWidth: 500,
+            mx: 'auto',
+            border: '1px solid #e1e1e1',
           }}
         >
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <SignupIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-            <Typography variant="h4" component="h1" gutterBottom>
-              Create Account
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h4" component="h1" sx={{ mb: 2, fontWeight: 600 }}>
+              Create your account
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Join Eventify and start organizing events
+              Get started with Eventify today
             </Typography>
           </Box>
 
           {(error || validationError) && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 3,
+                '& .MuiAlert-message': {
+                  fontSize: '0.875rem',
+                },
+              }}
+            >
               {error || validationError}
             </Alert>
           )}
 
           <Box component="form" onSubmit={handleSubmit}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="First Name"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                  autoComplete="given-name"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Last Name"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                  autoComplete="family-name"
-                />
-              </Grid>
-            </Grid>
-            <TextField
-              fullWidth
-              label="Email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              margin="normal"
-              required
-              autoComplete="email"
-            />
-            <TextField
-              fullWidth
-              label="Password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              margin="normal"
-              required
-              autoComplete="new-password"
-            />
-            <TextField
-              fullWidth
-              label="Confirm Password"
-              name="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              margin="normal"
-              required
-              autoComplete="new-password"
-            />
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                First Name
+              </Typography>
+              <TextField
+                fullWidth
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                autoComplete="given-name"
+                placeholder="Enter your first name"
+                variant="outlined"
+                sx={{ 
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                Last Name
+              </Typography>
+              <TextField
+                fullWidth
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+                autoComplete="family-name"
+                placeholder="Enter your last name"
+                variant="outlined"
+                sx={{ 
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                Email
+              </Typography>
+              <TextField
+                fullWidth
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                autoComplete="email"
+                placeholder="Enter your email"
+                variant="outlined"
+                sx={{ 
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                Password
+              </Typography>
+              <TextField
+                fullWidth
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                autoComplete="new-password"
+                placeholder="Create a password"
+                variant="outlined"
+                sx={{ 
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+            </Box>
+
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                Confirm Password
+              </Typography>
+              <TextField
+                fullWidth
+                name="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                autoComplete="new-password"
+                placeholder="Confirm your password"
+                variant="outlined"
+                sx={{ 
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+            </Box>
+
             <Button
               type="submit"
               fullWidth
               variant="contained"
               size="large"
               disabled={loading}
-              sx={{ mt: 3, mb: 2, py: 1.5 }}
+              sx={{ 
+                mb: 3,
+                py: 1.5,
+                fontSize: '0.875rem',
+                fontWeight: 500,
+              }}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? 'Creating account...' : 'Create account'}
             </Button>
           </Box>
 
-          <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e1e1e1' }}>
             <Typography variant="body2" color="text.secondary">
               Already have an account?{' '}
-              <MuiLink component={Link} to="/login" variant="body2">
-                Sign in here
+              <MuiLink 
+                component={Link} 
+                to="/login" 
+                sx={{ 
+                  color: 'text.primary',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
+                }}
+              >
+                Sign in
               </MuiLink>
             </Typography>
           </Box>
-        </Paper>
+        </Card>
       </Container>
     </Box>
   );
