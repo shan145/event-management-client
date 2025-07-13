@@ -16,6 +16,11 @@ import {
   Alert,
   FormControlLabel,
   Checkbox,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Avatar,
 } from '@mui/material';
 import {
   Group,
@@ -26,6 +31,7 @@ import {
   Share,
   Add,
   Email,
+  Visibility,
 } from '@mui/icons-material';
 import GroupEmailDialog from './GroupEmailDialog';
 import axios from 'axios';
@@ -41,8 +47,10 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [showMembersDialog, setShowMembersDialog] = useState(false);
   const [showFullName, setShowFullName] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [membersList, setMembersList] = useState([]);
   const [eventData, setEventData] = useState({
     title: '',
     description: '',
@@ -96,6 +104,20 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
       } catch (error) {
         setError('Failed to delete group');
       }
+    }
+  };
+
+  const handleViewMembers = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await axios.get(`/groups/${group._id}/members`);
+      setMembersList(response.data.data.members);
+      setShowMembersDialog(true);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to load members');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -243,48 +265,94 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
         </CardContent>
         
         <CardActions sx={{ 
-          flexDirection: 'column',
-          alignItems: 'stretch',
+          flexDirection: 'column', 
+          alignItems: 'stretch', 
           p: 3, 
           pt: 0, 
-          gap: 1
+          gap: 1,
+          '& .MuiBox-root': {
+            margin: 0,
+            padding: 0
+          }
         }}>
-          {isAdmin && (
-            <>
-              <Button
-                size="small"
-                startIcon={<Add />}
-                onClick={() => setShowEventDialog(true)}
-                sx={{ alignSelf: 'flex-start' }}
-              >
-                Add Event
-              </Button>
-              <Button
-                size="small"
-                startIcon={<Share />}
-                onClick={handleGenerateInvite}
-                disabled={loading}
-                sx={{ alignSelf: 'flex-start' }}
-              >
-                Invite
-              </Button>
-              <Button
-                size="small"
-                startIcon={<Email />}
-                onClick={() => setShowEmailDialog(true)}
-                disabled={!group.members || group.members.length === 0}
-                sx={{ alignSelf: 'flex-start' }}
-              >
-                Send Message
-              </Button>
-            </>
-          )}
+          {/* User Actions */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            width: '100%', 
+            alignItems: 'flex-start',
+            gap: 1,
+            margin: 0,
+            padding: 0
+          }}>
+            {/* Member Actions - Available to all group members */}
+            <Button
+              size="small"
+              startIcon={<Visibility />}
+              onClick={handleViewMembers}
+              disabled={loading}
+              sx={{ 
+                margin: 0,
+                padding: '6px 16px',
+                minWidth: 0
+              }}
+            >
+              View Members
+            </Button>
+
+            {isAdmin && (
+              <>
+                <Button
+                  size="small"
+                  startIcon={<Add />}
+                  onClick={() => setShowEventDialog(true)}
+                  sx={{ 
+                    margin: 0,
+                    padding: '6px 16px',
+                    minWidth: 0
+                  }}
+                >
+                  Add Event
+                </Button>
+                <Button
+                  size="small"
+                  startIcon={<Share />}
+                  onClick={handleGenerateInvite}
+                  disabled={loading}
+                  sx={{ 
+                    margin: 0,
+                    padding: '6px 16px',
+                    minWidth: 0
+                  }}
+                >
+                  Invite
+                </Button>
+                <Button
+                  size="small"
+                  startIcon={<Email />}
+                  onClick={() => setShowEmailDialog(true)}
+                  disabled={!group.members || group.members.length === 0}
+                  sx={{ 
+                    margin: 0,
+                    padding: '6px 16px',
+                    minWidth: 0
+                  }}
+                >
+                  Send Message
+                </Button>
+              </>
+            )}
+          </Box>
           
+          {/* Admin Delete Actions */}
           {userRole === 'admin' && (
             <Box sx={{ 
               display: 'flex', 
+              width: '100%',
               justifyContent: 'flex-end',
-              width: '100%'
+              gap: 1,
+              margin: 0,
+              padding: 0
             }}>
               <IconButton
                 size="small"
@@ -424,6 +492,54 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
           console.log('Group email sent successfully');
         }}
       />
+
+      {/* Group Members Dialog */}
+      <Dialog 
+        open={showMembersDialog} 
+        onClose={() => setShowMembersDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Group Members
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {group.name}
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          
+          <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
+            Members ({membersList.length})
+          </Typography>
+          
+          {membersList.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              No members found.
+            </Typography>
+          ) : (
+            <List dense>
+              {membersList.map((user) => (
+                <ListItem key={user._id}>
+                  <ListItemAvatar>
+                    <Avatar>{user?.firstName?.charAt(0) || 'U'}</Avatar>
+                  </ListItemAvatar>
+                  <ListItemText 
+                    primary={`${user?.firstName} ${user?.lastName}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowMembersDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
