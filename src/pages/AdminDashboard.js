@@ -34,6 +34,7 @@ import {
   LogoutOutlined,
   HomeOutlined,
   MoreVert,
+  Settings,
 } from '@mui/icons-material';
 import GroupCard from '../components/GroupCard';
 import EventCard from '../components/EventCard';
@@ -161,6 +162,10 @@ const AdminDashboard = () => {
               <MenuItem onClick={() => navigate('/')}>
                 <HomeOutlined sx={{ mr: 2, fontSize: 20 }} />
                 Home
+              </MenuItem>
+              <MenuItem onClick={() => navigate('/settings')}>
+                <Settings sx={{ mr: 2, fontSize: 20 }} />
+                Settings
               </MenuItem>
               <MenuItem onClick={handleLogout}>
                 <LogoutOutlined sx={{ mr: 2, fontSize: 20 }} />

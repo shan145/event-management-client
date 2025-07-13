@@ -116,6 +116,7 @@ export const AuthProvider = ({ children }) => {
     createAdmin,
     logout,
     clearError,
+    setUser,
     isAdmin: user?.role === 'admin',
   };
 

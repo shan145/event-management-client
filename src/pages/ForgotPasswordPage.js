@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import {
   Box,
   Typography,
@@ -12,34 +11,36 @@ import {
   Link as MuiLink,
   IconButton,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, Email } from '@mui/icons-material';
+import axios from 'axios';
 
-const LoginPage = () => {
+const ForgotPasswordPage = () => {
   const navigate = useNavigate();
-  const { login, error, clearError } = useAuth();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    if (error) clearError();
-  };
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
-    const result = await login(formData.email, formData.password);
-    if (result.success) {
-      navigate('/dashboard');
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await axios.post('/password-reset/request', {
+        email: email.trim()
+      });
+
+      if (response.data.success) {
+        setSuccess(response.data.message);
+        setEmail('');
+      }
+    } catch (error) {
+      setError(error.response?.data?.message || 'An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -57,7 +58,7 @@ const LoginPage = () => {
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <IconButton
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/login')}
             sx={{ mb: 2 }}
           >
             <ArrowBack />
@@ -76,11 +77,14 @@ const LoginPage = () => {
           }}
         >
           <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Box sx={{ mb: 2 }}>
+              <Email sx={{ fontSize: 48, color: 'primary.main' }} />
+            </Box>
             <Typography variant="h4" component="h1" sx={{ mb: 2, fontWeight: 600 }}>
-              Welcome back
+              Forgot password?
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Sign in to your account to continue
+              Enter your email address and we'll send you a link to reset your password.
             </Typography>
           </Box>
 
@@ -98,43 +102,34 @@ const LoginPage = () => {
             </Alert>
           )}
 
+          {success && (
+            <Alert 
+              severity="success" 
+              sx={{ 
+                mb: 3,
+                '& .MuiAlert-message': {
+                  fontSize: '0.875rem',
+                },
+              }}
+            >
+              {success}
+            </Alert>
+          )}
+
           <Box component="form" onSubmit={handleSubmit}>
             <Box sx={{ mb: 3 }}>
               <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                Email
+                Email Address
               </Typography>
               <TextField
                 fullWidth
-                name="email"
                 type="email"
-                value={formData.email}
-                onChange={handleChange}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
                 autoFocus
-                placeholder="Enter your email"
-                variant="outlined"
-                sx={{ 
-                  '& .MuiOutlinedInput-root': {
-                    fontSize: '0.875rem',
-                  },
-                }}
-              />
-            </Box>
-
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                Password
-              </Typography>
-              <TextField
-                fullWidth
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                autoComplete="current-password"
-                placeholder="Enter your password"
+                placeholder="Enter your email address"
                 variant="outlined"
                 sx={{ 
                   '& .MuiOutlinedInput-root': {
@@ -149,42 +144,24 @@ const LoginPage = () => {
               fullWidth
               variant="contained"
               size="large"
-              disabled={loading}
+              disabled={loading || !email.trim()}
               sx={{ 
-                mb: 2,
+                mb: 3,
                 py: 1.5,
                 fontSize: '0.875rem',
                 fontWeight: 500,
               }}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Sending...' : 'Send Reset Link'}
             </Button>
-
-            <Box sx={{ textAlign: 'center', mb: 3 }}>
-              <MuiLink 
-                component={Link} 
-                to="/forgot-password" 
-                sx={{ 
-                  color: 'text.primary',
-                  fontWeight: 500,
-                  fontSize: '0.875rem',
-                  textDecoration: 'none',
-                  '&:hover': {
-                    textDecoration: 'underline',
-                  },
-                }}
-              >
-                Forgot your password?
-              </MuiLink>
-            </Box>
           </Box>
 
           <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e1e1e1' }}>
             <Typography variant="body2" color="text.secondary">
-              Don't have an account?{' '}
+              Remember your password?{' '}
               <MuiLink 
                 component={Link} 
-                to="/signup" 
+                to="/login" 
                 sx={{ 
                   color: 'text.primary',
                   fontWeight: 500,
@@ -194,7 +171,7 @@ const LoginPage = () => {
                   },
                 }}
               >
-                Sign up
+                Back to sign in
               </MuiLink>
             </Typography>
           </Box>
@@ -204,4 +181,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage; 
+export default ForgotPasswordPage; 
