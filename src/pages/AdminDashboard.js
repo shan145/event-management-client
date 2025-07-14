@@ -24,6 +24,7 @@ import {
   Avatar,
   Card,
   CardContent,
+  Chip,
 } from '@mui/material';
 import {
   Group,
@@ -48,17 +49,26 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedTab = localStorage.getItem('adminDashboardActiveTab');
+    return savedTab ? parseInt(savedTab, 10) : 0;
+  });
   const [showGroupDialog, setShowGroupDialog] = useState(false);
   const [groupData, setGroupData] = useState({
     name: '',
-    description: '',
+    tags: [],
   });
+  const [tagInput, setTagInput] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+    localStorage.setItem('adminDashboardActiveTab', newValue.toString());
+  };
 
   const fetchData = async () => {
     try {
@@ -85,9 +95,34 @@ const AdminDashboard = () => {
       const response = await axios.post('/groups', groupData);
       setGroups([...groups, response.data.data.group]);
       setShowGroupDialog(false);
-      setGroupData({ name: '', description: '' });
+      setGroupData({ name: '', tags: [] });
+      setTagInput('');
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create group');
+    }
+  };
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !groupData.tags.includes(tagInput.trim())) {
+      setGroupData({
+        ...groupData,
+        tags: [...groupData.tags, tagInput.trim()]
+      });
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setGroupData({
+      ...groupData,
+      tags: groupData.tags.filter(tag => tag !== tagToRemove)
+    });
+  };
+
+  const handleTagInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
     }
   };
 
@@ -96,7 +131,7 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteEvent = (eventId) => {
-    setEvents(events.filter(e => e._id !== eventId));
+    setEvents(prevEvents => prevEvents.filter(e => e._id !== eventId));
   };
 
   const handleLogout = () => {
@@ -198,7 +233,7 @@ const AdminDashboard = () => {
           <Box sx={{ borderBottom: '1px solid #e1e1e1' }}>
             <Tabs 
               value={activeTab} 
-              onChange={(e, newValue) => setActiveTab(newValue)}
+              onChange={handleTabChange}
               sx={{
                 '& .MuiTabs-flexContainer': {
                   gap: 4,
@@ -366,15 +401,42 @@ const AdminDashboard = () => {
             margin="normal"
             required
           />
-          <TextField
-            fullWidth
-            label="Description"
-            value={groupData.description}
-            onChange={(e) => setGroupData({ ...groupData, description: e.target.value })}
-            margin="normal"
-            multiline
-            rows={3}
-          />
+          
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              Tags
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+              {groupData.tags.map((tag, index) => (
+                <Chip
+                  key={index}
+                  label={tag}
+                  onDelete={() => handleRemoveTag(tag)}
+                  color="primary"
+                  variant="outlined"
+                />
+              ))}
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <TextField
+                fullWidth
+                label="Add Tag"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyPress={handleTagInputKeyPress}
+                placeholder="Type tag and press Enter"
+                size="small"
+              />
+              <Button
+                variant="outlined"
+                onClick={handleAddTag}
+                disabled={!tagInput.trim() || groupData.tags.includes(tagInput.trim())}
+                sx={{ minWidth: 'auto', px: 2 }}
+              >
+                Add
+              </Button>
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowGroupDialog(false)}>Cancel</Button>

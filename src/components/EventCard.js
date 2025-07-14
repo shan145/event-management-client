@@ -51,6 +51,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showNotGoingConfirmDialog, setShowNotGoingConfirmDialog] = useState(false);
+  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -214,14 +215,32 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
     }
   };
 
-  const handleDeleteEvent = async () => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
-      try {
-        await axios.delete(`/events/${event._id}`);
-        if (onDelete) onDelete(event._id);
-      } catch (error) {
-        setError('Failed to delete event');
-      }
+  const handleDeleteEvent = () => {
+    setShowDeleteConfirmDialog(true);
+  };
+
+  const confirmDeleteEvent = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      await axios.delete(`/events/${event._id}`);
+      
+              // Immediately update parent state
+        if (onDelete) {
+          onDelete(event._id);
+        }
+        
+        // Also trigger onUpdate as backup
+        if (onUpdate) {
+          onUpdate();
+        }
+      
+      setShowDeleteConfirmDialog(false);
+    } catch (error) {
+      console.error('Delete event error:', error);
+      setError(error.response?.data?.message || 'Failed to delete event');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -392,7 +411,8 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <People sx={{ fontSize: 18, color: 'text.secondary' }} />
               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                {(event.goingList?.length || 0) + (event.guests || 0)} total 
+                {(event.goingList?.length || 0) + (event.guests || 0)}
+                {event.maxAttendees ? ` / ${event.maxAttendees}` : ''} total 
                 ({event.goingList?.length || 0} going{event.guests ? ` + ${event.guests} guests` : ''}) • {event.waitlist?.length || 0} waitlisted
               </Typography>
             </Box>
@@ -525,6 +545,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
                 size="small"
                 color="error"
                 onClick={handleDeleteEvent}
+                disabled={loading}
               >
                 <Delete />
               </IconButton>
@@ -870,6 +891,48 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
             disabled={loading}
           >
             {loading ? 'Updating...' : 'Yes, Not Going'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Event Confirmation Dialog */}
+      <Dialog 
+        open={showDeleteConfirmDialog} 
+        onClose={() => setShowDeleteConfirmDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: 'error.main' }}>
+          Delete Event
+        </DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Are you sure you want to delete "{event.title}"?
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            This action cannot be undone. All attendee information and event data will be permanently removed.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setShowDeleteConfirmDialog(false)}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmDeleteEvent}
+            color="error"
+            variant="contained"
+            disabled={loading}
+            startIcon={loading ? null : <Delete />}
+          >
+            {loading ? 'Deleting...' : 'Delete Event'}
           </Button>
         </DialogActions>
       </Dialog>

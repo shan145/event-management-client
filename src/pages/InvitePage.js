@@ -186,9 +186,6 @@ const InvitePage = () => {
             <Typography variant="h6" gutterBottom>
               {group.name}
             </Typography>
-            <Typography variant="body1" color="text.secondary">
-              {group.description}
-            </Typography>
           </Box>
 
           {error && (

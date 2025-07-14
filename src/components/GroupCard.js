@@ -32,6 +32,7 @@ import {
   Add,
   Email,
   Visibility,
+  ExitToApp,
 } from '@mui/icons-material';
 import GroupEmailDialog from './GroupEmailDialog';
 import axios from 'axios';
@@ -47,9 +48,13 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editData, setEditData] = useState({ name: '', tags: [] });
+  const [editTagInput, setEditTagInput] = useState('');
   const [showMembersDialog, setShowMembersDialog] = useState(false);
+  const [showLeaveGroupDialog, setShowLeaveGroupDialog] = useState(false);
+  const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState(false);
   const [showFullName, setShowFullName] = useState(false);
-  const [showFullDescription, setShowFullDescription] = useState(false);
   const [membersList, setMembersList] = useState([]);
   const [eventData, setEventData] = useState({
     title: '',
@@ -57,6 +62,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
     date: '',
     time: '',
     location: '',
+    maxAttendees: '',
     guests: '',
     notifyGroup: false,
   });
@@ -84,10 +90,11 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
       
       const response = await axios.post(`/groups/${group._id}/events`, {
         ...eventData,
+        maxAttendees: eventData.maxAttendees ? parseInt(eventData.maxAttendees) : null,
       });
       
       setShowEventDialog(false);
-      setEventData({ title: '', description: '', date: '', time: '', location: '', guests: '', notifyGroup: false });
+      setEventData({ title: '', description: '', date: '', time: '', location: '', maxAttendees: '', guests: '', notifyGroup: false });
       if (onUpdate) onUpdate();
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create event');
@@ -96,14 +103,68 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
     }
   };
 
-  const handleDeleteGroup = async () => {
-    if (window.confirm('Are you sure you want to delete this group?')) {
-      try {
-        await axios.delete(`/groups/${group._id}`);
-        if (onDelete) onDelete(group._id);
-      } catch (error) {
-        setError('Failed to delete group');
-      }
+  const handleEditGroup = () => {
+    setEditData({ 
+      name: group.name, 
+      tags: group.tags || [] 
+    });
+    setEditTagInput('');
+    setShowEditDialog(true);
+  };
+
+  const handleUpdateGroup = async () => {
+    try {
+      setError('');
+      setLoading(true);
+      const response = await axios.put(`/groups/${group._id}`, editData);
+      if (onUpdate) onUpdate();
+      setShowEditDialog(false);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to update group');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddEditTag = () => {
+    if (editTagInput.trim() && !editData.tags.includes(editTagInput.trim())) {
+      setEditData({
+        ...editData,
+        tags: [...editData.tags, editTagInput.trim()]
+      });
+      setEditTagInput('');
+    }
+  };
+
+  const handleRemoveEditTag = (tagToRemove) => {
+    setEditData({
+      ...editData,
+      tags: editData.tags.filter(tag => tag !== tagToRemove)
+    });
+  };
+
+  const handleEditTagInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddEditTag();
+    }
+  };
+
+  const handleDeleteGroup = () => {
+    setShowDeleteGroupDialog(true);
+  };
+
+  const confirmDeleteGroup = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      await axios.delete(`/groups/${group._id}`);
+      if (onDelete) onDelete(group._id);
+      setShowDeleteGroupDialog(false);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to delete group');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,6 +177,21 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
       setShowMembersDialog(true);
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to load members');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLeaveGroup = async () => {
+    try {
+      setLoading(true);
+      await axios.post(`/groups/${group._id}/leave`);
+      setShowLeaveGroupDialog(false);
+      if (onUpdate) {
+        onUpdate();
+      }
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to leave group');
     } finally {
       setLoading(false);
     }
@@ -207,46 +283,6 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
             )}
           </Box>
           
-          {group.description && (
-            <Box sx={{ mb: 3 }}>
-              <Typography 
-                variant="body2" 
-                color="text.secondary" 
-                sx={{ 
-                  lineHeight: 1.5,
-                  wordWrap: 'break-word',
-                  overflowWrap: 'break-word',
-                  maxWidth: '100%',
-                  whiteSpace: 'pre-line'
-                }}
-              >
-                {group.description.length > 60 && !showFullDescription
-                  ? `${group.description.substring(0, 60)}...`
-                  : group.description}
-              </Typography>
-              {group.description.length > 60 && (
-                <Button
-                  size="small"
-                  onClick={() => setShowFullDescription(!showFullDescription)}
-                  sx={{ 
-                    p: 0,
-                    mt: 0.5,
-                    minWidth: 'auto',
-                    textTransform: 'none',
-                    fontSize: '0.75rem',
-                    color: 'text.secondary',
-                    '&:hover': {
-                      backgroundColor: 'transparent',
-                      color: 'primary.main'
-                    }
-                  }}
-                >
-                  {showFullDescription ? 'Show less' : 'Show more'}
-                </Button>
-              )}
-            </Box>
-          )}
-          
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <People sx={{ fontSize: 18, color: 'text.secondary' }} />
@@ -261,6 +297,22 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
                 {group.eventCount || 0} events
               </Typography>
             </Box>
+
+            {/* Tags */}
+            {group.tags && group.tags.length > 0 && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                {group.tags.map((tag, index) => (
+                  <Chip
+                    key={index}
+                    label={tag}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    sx={{ fontSize: '0.75rem' }}
+                  />
+                ))}
+              </Box>
+            )}
           </Box>
         </CardContent>
         
@@ -299,6 +351,28 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
             >
               View Members
             </Button>
+
+            {/* Leave Group - Available to non-admin members */}
+            {!isAdmin && (
+              <Button
+                size="small"
+                startIcon={<ExitToApp />}
+                onClick={() => setShowLeaveGroupDialog(true)}
+                disabled={loading}
+                sx={{ 
+                  margin: 0,
+                  padding: '6px 16px',
+                  minWidth: 0,
+                  color: 'error.main',
+                  '&:hover': {
+                    backgroundColor: 'error.light',
+                    color: 'error.contrastText'
+                  }
+                }}
+              >
+                Leave Group
+              </Button>
+            )}
 
             {isAdmin && (
               <>
@@ -354,6 +428,13 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
               margin: 0,
               padding: 0
             }}>
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={handleEditGroup}
+              >
+                <Edit />
+              </IconButton>
               <IconButton
                 size="small"
                 color="error"
@@ -450,6 +531,17 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
           
           <TextField
             fullWidth
+            label="Max Attendees (optional)"
+            type="number"
+            value={eventData.maxAttendees}
+            onChange={(e) => setEventData({ ...eventData, maxAttendees: e.target.value })}
+            margin="normal"
+            InputProps={{ inputProps: { min: 1 } }}
+            helperText="Leave empty for unlimited attendees"
+          />
+          
+          <TextField
+            fullWidth
             label="Number of Guests (optional)"
             type="number"
             value={eventData.guests}
@@ -538,6 +630,174 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowMembersDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Leave Group Confirmation Dialog */}
+      <Dialog 
+        open={showLeaveGroupDialog} 
+        onClose={() => setShowLeaveGroupDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Leave Group
+        </DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Are you sure you want to leave "{group.name}"?
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            This action cannot be undone. You will be removed from:
+          </Typography>
+          <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 1, pl: 2 }}>
+            <li>The group's member list</li>
+            <li>All events in this group (going, waitlist, not going)</li>
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            You will need a new invitation to rejoin this group.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setShowLeaveGroupDialog(false)}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleLeaveGroup}
+            variant="contained"
+            color="error"
+            disabled={loading}
+          >
+            {loading ? 'Leaving...' : 'Leave Group'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Group Confirmation Dialog */}
+      <Dialog 
+        open={showDeleteGroupDialog} 
+        onClose={() => setShowDeleteGroupDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: 'error.main' }}>
+          Delete Group
+        </DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Are you sure you want to delete "{group.name}"?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            This action cannot be undone. This will permanently delete:
+          </Typography>
+          <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 1, pl: 2 }}>
+            <li>The group and all its data</li>
+            <li>All events created in this group</li>
+            <li>All member associations with this group</li>
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setShowDeleteGroupDialog(false)}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmDeleteGroup}
+            color="error"
+            variant="contained"
+            disabled={loading}
+            startIcon={loading ? null : <Delete />}
+          >
+            {loading ? 'Deleting...' : 'Delete Group'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Group Dialog */}
+      <Dialog 
+        open={showEditDialog} 
+        onClose={() => setShowEditDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Edit Group</DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <TextField
+            fullWidth
+            label="Group Name"
+            value={editData.name}
+            onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+            margin="normal"
+            required
+          />
+          
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              Tags
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+              {editData.tags.map((tag, index) => (
+                <Chip
+                  key={index}
+                  label={tag}
+                  onDelete={() => handleRemoveEditTag(tag)}
+                  color="primary"
+                  variant="outlined"
+                />
+              ))}
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <TextField
+                fullWidth
+                label="Add Tag"
+                value={editTagInput}
+                onChange={(e) => setEditTagInput(e.target.value)}
+                onKeyPress={handleEditTagInputKeyPress}
+                placeholder="Type tag and press Enter"
+                size="small"
+              />
+              <Button
+                variant="outlined"
+                onClick={handleAddEditTag}
+                disabled={!editTagInput.trim() || editData.tags.includes(editTagInput.trim())}
+                sx={{ minWidth: 'auto', px: 2 }}
+              >
+                Add
+              </Button>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowEditDialog(false)} disabled={loading}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleUpdateGroup} 
+            variant="contained"
+            disabled={!editData.name || loading}
+          >
+            {loading ? 'Updating...' : 'Update Group'}
+          </Button>
         </DialogActions>
       </Dialog>
     </>

@@ -41,12 +41,20 @@ const UserDashboard = () => {
   const [userEvents, setUserEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedTab = localStorage.getItem('userDashboardActiveTab');
+    return savedTab ? parseInt(savedTab, 10) : 0;
+  });
   const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
     fetchUserData();
   }, []);
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+    localStorage.setItem('userDashboardActiveTab', newValue.toString());
+  };
 
   const fetchUserData = async () => {
     try {
@@ -164,7 +172,7 @@ const UserDashboard = () => {
           <Box sx={{ borderBottom: '1px solid #e1e1e1' }}>
             <Tabs 
               value={activeTab} 
-              onChange={(e, newValue) => setActiveTab(newValue)}
+              onChange={handleTabChange}
               sx={{
                 '& .MuiTabs-flexContainer': {
                   gap: 4,
