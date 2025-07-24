@@ -63,6 +63,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
     date: '',
     time: '',
     location: '',
+    locationUrl: '',
     maxAttendees: '',
     guests: '',
   });
@@ -189,6 +190,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
       date: formattedDate,
       time: formattedTime,
       location: event.location || '',
+      locationUrl: event.locationUrl || '',
       maxAttendees: event.maxAttendees || '',
       guests: event.guests || '',
     });
@@ -393,18 +395,41 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
             {event.location && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <LocationOn sx={{ fontSize: 18, color: 'text.secondary', flexShrink: 0 }} />
-                <Typography 
-                  variant="body2" 
-                  color="text.secondary"
-                  sx={{
-                    fontWeight: 500,
-                    wordWrap: 'break-word',
-                    overflowWrap: 'break-word',
-                    maxWidth: '100%'
-                  }}
-                >
-                  {event.location}
-                </Typography>
+                {event.locationUrl ? (
+                  <Typography 
+                    variant="body2" 
+                    color="primary"
+                    component="a"
+                    href={event.locationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      fontWeight: 500,
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      maxWidth: '100%',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'underline'
+                      }
+                    }}
+                  >
+                    {event.location}
+                  </Typography>
+                ) : (
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{
+                      fontWeight: 500,
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      maxWidth: '100%'
+                    }}
+                  >
+                    {event.location}
+                  </Typography>
+                )}
               </Box>
             )}
             
@@ -773,6 +798,15 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
             value={editData.location}
             onChange={(e) => setEditData({ ...editData, location: e.target.value })}
             margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Location URL (optional)"
+            value={editData.locationUrl}
+            onChange={(e) => setEditData({ ...editData, locationUrl: e.target.value })}
+            margin="normal"
+            placeholder="https://maps.google.com/... or coordinates"
+            helperText="Add a clickable link for directions (Google Maps, coordinates, etc.)"
           />
           <TextField
             fullWidth

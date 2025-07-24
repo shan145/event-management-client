@@ -62,6 +62,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
     date: '',
     time: '',
     location: '',
+    locationUrl: '',
     maxAttendees: '',
     guests: '',
     notifyGroup: false,
@@ -94,7 +95,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
       });
       
       setShowEventDialog(false);
-      setEventData({ title: '', description: '', date: '', time: '', location: '', maxAttendees: '', guests: '', notifyGroup: false });
+      setEventData({ title: '', description: '', date: '', time: '', location: '', locationUrl: '', maxAttendees: '', guests: '', notifyGroup: false });
       if (onUpdate) onUpdate();
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create event');
@@ -527,6 +528,15 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
             value={eventData.location}
             onChange={(e) => setEventData({ ...eventData, location: e.target.value })}
             margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Location URL (optional)"
+            value={eventData.locationUrl}
+            onChange={(e) => setEventData({ ...eventData, locationUrl: e.target.value })}
+            margin="normal"
+            placeholder="https://maps.google.com/... or coordinates"
+            helperText="Add a clickable link for directions (Google Maps, coordinates, etc.)"
           />
           
           <TextField
