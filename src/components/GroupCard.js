@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Card,
   CardContent,
@@ -21,6 +21,7 @@ import {
   ListItemText,
   ListItemAvatar,
   Avatar,
+  Divider
 } from '@mui/material';
 import {
   Group,
@@ -33,15 +34,82 @@ import {
   Email,
   Visibility,
   ExitToApp,
+  LocationOn
 } from '@mui/icons-material';
-import { DatePicker, TimePicker } from '@mui/x-date-pickers';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import GroupEmailDialog from './GroupEmailDialog';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+
+// Enhanced Location Picker component
+const LocationPicker = ({ value, onChange, placeholder = "Enter location name..." }) => {
+  const [inputValue, setInputValue] = useState('');
+
+  useEffect(() => {
+    setInputValue(value || '');
+  }, [value]);
+
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    onChange({ name: newValue, url: '' });
+  };
+
+  const handlePickFromMaps = () => {
+    if (inputValue.trim()) {
+      const googleMapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(inputValue.trim())}`;
+      onChange({ name: inputValue.trim(), url: googleMapsUrl });
+      
+      // Open Google Maps in a new tab
+      window.open(googleMapsUrl, '_blank');
+    }
+  };
+
+  const handleOpenMapsPicker = () => {
+    // Open Google Maps location picker
+    const mapsUrl = 'https://www.google.com/maps';
+    window.open(mapsUrl, '_blank');
+  };
+
+  return (
+    <Box>
+      <TextField
+        fullWidth
+        label="Location"
+        value={inputValue}
+        onChange={handleInputChange}
+        margin="normal"
+        placeholder={placeholder}
+        InputProps={{
+          startAdornment: <LocationOn sx={{ mr: 1, color: 'text.secondary' }} />
+        }}
+      />
+      
+      <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={handlePickFromMaps}
+          disabled={!inputValue.trim()}
+          startIcon={<LocationOn />}
+        >
+          Open in Maps
+        </Button>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={handleOpenMapsPicker}
+          startIcon={<LocationOn />}
+        >
+          Pick Location
+        </Button>
+      </Box>
+    </Box>
+  );
+};
 
 // Configure dayjs with timezone support
 dayjs.extend(utc);
@@ -64,13 +132,15 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
     description: '',
     date: null,
     time: null,
-    location: '',
-    locationUrl: '',
+    location: { name: '', url: '' },
     maxAttendees: '',
     guests: '',
     notifyGroup: false,
   });
   const [loading, setLoading] = useState(false);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [leaveLoading, setLeaveLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Helper function to truncate text while respecting newlines
@@ -90,7 +160,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
 
   const handleGenerateInvite = async () => {
     try {
-      setLoading(true);
+      setInviteLoading(true);
       const response = await axios.post(`/groups/${group._id}/invite`);
       // Update the group with the new invite token
       group.inviteToken = response.data.data.inviteToken;
@@ -98,7 +168,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
     } catch (error) {
       setError('Failed to generate invite link');
     } finally {
-      setLoading(false);
+      setInviteLoading(false);
     }
   };
 
@@ -115,11 +185,13 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
         ...eventData,
         date: formattedDate,
         time: formattedTime,
+        location: eventData.location.name,
+        locationUrl: eventData.location.url,
         maxAttendees: eventData.maxAttendees ? parseInt(eventData.maxAttendees) : null,
       });
       
       setShowEventDialog(false);
-      setEventData({ title: '', description: '', date: null, time: null, location: '', locationUrl: '', maxAttendees: '', guests: '', notifyGroup: false });
+      setEventData({ title: '', description: '', date: null, time: null, location: { name: '', url: '' }, maxAttendees: '', guests: '', notifyGroup: false });
       if (onUpdate) onUpdate();
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create event');
@@ -195,7 +267,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
 
   const handleViewMembers = async () => {
     try {
-      setLoading(true);
+      setMembersLoading(true);
       setError('');
       const response = await axios.get(`/groups/${group._id}/members`);
       setMembersList(response.data.data.members);
@@ -203,13 +275,13 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to load members');
     } finally {
-      setLoading(false);
+      setMembersLoading(false);
     }
   };
 
   const handleLeaveGroup = async () => {
     try {
-      setLoading(true);
+      setLeaveLoading(true);
       await axios.post(`/groups/${group._id}/leave`);
       setShowLeaveGroupDialog(false);
       if (onUpdate) {
@@ -218,7 +290,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to leave group');
     } finally {
-      setLoading(false);
+      setLeaveLoading(false);
     }
   };
 
@@ -367,7 +439,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
               size="small"
               startIcon={<Visibility />}
               onClick={handleViewMembers}
-              disabled={loading}
+              disabled={membersLoading}
               sx={{ 
                 margin: 0,
                 padding: '6px 16px',
@@ -383,7 +455,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
                 size="small"
                 startIcon={<ExitToApp />}
                 onClick={() => setShowLeaveGroupDialog(true)}
-                disabled={loading}
+                disabled={leaveLoading}
                 sx={{ 
                   margin: 0,
                   padding: '6px 16px',
@@ -417,7 +489,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
                   size="small"
                   startIcon={<Share />}
                   onClick={handleGenerateInvite}
-                  disabled={loading}
+                  disabled={inviteLoading}
                   sx={{ 
                     margin: 0,
                     padding: '6px 16px',
@@ -570,22 +642,21 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
               sx={{ width: '100%' }}
             />
           </LocalizationProvider>
-          <TextField
-            fullWidth
-            label="Location"
-            value={eventData.location}
-            onChange={(e) => setEventData({ ...eventData, location: e.target.value })}
-            margin="normal"
+          <LocationPicker
+            value={eventData.location.name}
+            onChange={(locationData) => setEventData({ ...eventData, location: locationData })}
+            placeholder="Search for a location..."
           />
-          <TextField
-            fullWidth
-            label="Location URL (optional)"
-            value={eventData.locationUrl}
-            onChange={(e) => setEventData({ ...eventData, locationUrl: e.target.value })}
-            margin="normal"
-            placeholder="https://maps.google.com/... or coordinates"
-            helperText="Add a clickable link for directions (Google Maps, coordinates, etc.)"
-          />
+          {eventData.location.url && (
+            <Box sx={{ mt: 1, p: 1, bgcolor: 'success.light', borderRadius: 1 }}>
+              <Typography variant="body2" color="success.contrastText">
+                ✅ Location selected: {eventData.location.name}
+              </Typography>
+              <Typography variant="caption" color="success.contrastText">
+                Google Maps link will be automatically generated
+              </Typography>
+            </Box>
+          )}
           
           <TextField
             fullWidth
@@ -724,7 +795,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
         <DialogActions>
           <Button 
             onClick={() => setShowLeaveGroupDialog(false)}
-            disabled={loading}
+            disabled={leaveLoading}
           >
             Cancel
           </Button>
@@ -732,9 +803,9 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
             onClick={handleLeaveGroup}
             variant="contained"
             color="error"
-            disabled={loading}
+            disabled={leaveLoading}
           >
-            {loading ? 'Leaving...' : 'Leave Group'}
+            {leaveLoading ? 'Leaving...' : 'Leave Group'}
           </Button>
         </DialogActions>
       </Dialog>

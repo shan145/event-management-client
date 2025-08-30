@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -47,6 +47,73 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+// Enhanced Location Picker component
+const LocationPicker = ({ value, onChange, placeholder = "Enter location name..." }) => {
+  const [inputValue, setInputValue] = useState('');
+
+  useEffect(() => {
+    setInputValue(value || '');
+  }, [value]);
+
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    onChange({ name: newValue, url: '' });
+  };
+
+  const handlePickFromMaps = () => {
+    if (inputValue.trim()) {
+      const googleMapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(inputValue.trim())}`;
+      onChange({ name: inputValue.trim(), url: googleMapsUrl });
+      
+      // Open Google Maps in a new tab
+      window.open(googleMapsUrl, '_blank');
+    }
+  };
+
+  const handleOpenMapsPicker = () => {
+    // Open Google Maps location picker
+    const mapsUrl = 'https://www.google.com/maps';
+    window.open(mapsUrl, '_blank');
+  };
+
+  return (
+    <Box>
+      <TextField
+        fullWidth
+        label="Location"
+        value={inputValue}
+        onChange={handleInputChange}
+        margin="normal"
+        placeholder={placeholder}
+        InputProps={{
+          startAdornment: <LocationOn sx={{ mr: 1, color: 'text.secondary' }} />
+        }}
+      />
+      
+      <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={handlePickFromMaps}
+          disabled={!inputValue.trim()}
+          startIcon={<LocationOn />}
+        >
+          Open in Maps
+        </Button>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={handleOpenMapsPicker}
+          startIcon={<LocationOn />}
+        >
+          Pick Location
+        </Button>
+      </Box>
+    </Box>
+  );
+};
+
 const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
   const [showWaitlistDialog, setShowWaitlistDialog] = useState(false);
   const [showAttendeesDialog, setShowAttendeesDialog] = useState(false);
@@ -65,8 +132,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
     description: '',
     date: null,
     time: null,
-    location: '',
-    locationUrl: '',
+    location: { name: '', url: '' },
     maxAttendees: '',
     guests: '',
   });
@@ -204,8 +270,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
       description: event.description || '',
       date: eventDateET,
       time: eventTime,
-      location: event.location || '',
-      locationUrl: event.locationUrl || '',
+      location: { name: event.location || '', url: event.locationUrl || '' },
       maxAttendees: event.maxAttendees || '',
       guests: event.guests || '',
     });
@@ -225,6 +290,8 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
         ...editData,
         date: formattedDate,
         time: formattedTime,
+        location: editData.location.name,
+        locationUrl: editData.location.url,
         maxAttendees: editData.maxAttendees ? parseInt(editData.maxAttendees) : null,
         guests: editData.guests ? parseInt(editData.guests) : 0,
       });
@@ -837,22 +904,21 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
                sx={{ width: '100%' }}
              />
            </LocalizationProvider>
-          <TextField
-            fullWidth
-            label="Location"
-            value={editData.location}
-            onChange={(e) => setEditData({ ...editData, location: e.target.value })}
-            margin="normal"
+          <LocationPicker
+            value={editData.location.name}
+            onChange={(locationData) => setEditData({ ...editData, location: locationData })}
+            placeholder="Search for a location..."
           />
-          <TextField
-            fullWidth
-            label="Location URL (optional)"
-            value={editData.locationUrl}
-            onChange={(e) => setEditData({ ...editData, locationUrl: e.target.value })}
-            margin="normal"
-            placeholder="https://maps.google.com/... or coordinates"
-            helperText="Add a clickable link for directions (Google Maps, coordinates, etc.)"
-          />
+          {editData.location.url && (
+            <Box sx={{ mt: 1, p: 1, bgcolor: 'success.light', borderRadius: 1 }}>
+              <Typography variant="body2" color="success.contrastText">
+                ✅ Location selected: {editData.location.name}
+              </Typography>
+              <Typography variant="caption" color="success.contrastText">
+                Google Maps link will be automatically generated
+              </Typography>
+            </Box>
+          )}
           <TextField
             fullWidth
             label="Max Attendees (optional)"
