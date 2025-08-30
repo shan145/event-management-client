@@ -159,8 +159,8 @@ const GroupEmailDialog = ({ open, onClose, group, onSuccess }) => {
           onChange={handleInputChange('message')}
           multiline
           rows={6}
-          placeholder="Type your message here..."
-          helperText="This message will be sent privately to all group members (BCC) along with group details."
+          placeholder="Type your message here... (press Enter for new lines)"
+          helperText="This message will be sent privately to all group members (BCC) along with group details. Use Enter key to create new lines."
         />
       </DialogContent>
       

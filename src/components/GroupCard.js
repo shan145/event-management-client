@@ -34,6 +34,9 @@ import {
   Visibility,
   ExitToApp,
 } from '@mui/icons-material';
+import { DatePicker, TimePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import GroupEmailDialog from './GroupEmailDialog';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -59,8 +62,8 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
   const [eventData, setEventData] = useState({
     title: '',
     description: '',
-    date: '',
-    time: '',
+    date: null,
+    time: null,
     location: '',
     locationUrl: '',
     maxAttendees: '',
@@ -69,6 +72,21 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Helper function to truncate text while respecting newlines
+  const truncateText = (text, maxLength) => {
+    if (!text || text.length <= maxLength) return text;
+    
+    // Find the first newline within the maxLength
+    const truncated = text.substring(0, maxLength);
+    const lastNewline = truncated.lastIndexOf('\n');
+    
+    if (lastNewline > 0) {
+      return truncated.substring(0, lastNewline) + '...';
+    }
+    
+    return truncated + '...';
+  };
 
   const handleGenerateInvite = async () => {
     try {
@@ -89,13 +107,19 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
       setLoading(true);
       setError('');
       
+      // Format the date and time for the server
+      const formattedDate = eventData.date ? eventData.date.format('YYYY-MM-DD') : '';
+      const formattedTime = eventData.time ? eventData.time.format('HH:mm') : '';
+      
       const response = await axios.post(`/groups/${group._id}/events`, {
         ...eventData,
+        date: formattedDate,
+        time: formattedTime,
         maxAttendees: eventData.maxAttendees ? parseInt(eventData.maxAttendees) : null,
       });
       
       setShowEventDialog(false);
-      setEventData({ title: '', description: '', date: '', time: '', location: '', locationUrl: '', maxAttendees: '', guests: '', notifyGroup: false });
+      setEventData({ title: '', description: '', date: null, time: null, location: '', locationUrl: '', maxAttendees: '', guests: '', notifyGroup: false });
       if (onUpdate) onUpdate();
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create event');
@@ -501,27 +525,51 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
             margin="normal"
             multiline
             rows={3}
+            placeholder="Enter event description... (press Enter for new lines)"
+            helperText="Use Enter key to create new lines in your description"
           />
-          <TextField
-            fullWidth
-            label="Date"
-            type="date"
-            value={eventData.date}
-            onChange={(e) => setEventData({ ...eventData, date: e.target.value })}
-            margin="normal"
-            required
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            fullWidth
-            label="Time"
-            type="time"
-            value={eventData.time}
-            onChange={(e) => setEventData({ ...eventData, time: e.target.value })}
-            margin="normal"
-            required
-            InputLabelProps={{ shrink: true }}
-          />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label="Date"
+              value={eventData.date}
+              onChange={(newValue) => setEventData({ ...eventData, date: newValue })}
+              slotProps={{ 
+                textField: { 
+                  fullWidth: true, 
+                  margin: 'normal',
+                  required: true,
+                  sx: {
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      },
+                    }
+                  }
+                } 
+              }}
+              sx={{ width: '100%' }}
+            />
+            <TimePicker
+              label="Time"
+              value={eventData.time}
+              onChange={(newValue) => setEventData({ ...eventData, time: newValue })}
+              slotProps={{ 
+                textField: { 
+                  fullWidth: true, 
+                  margin: 'normal',
+                  required: true,
+                  sx: {
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      },
+                    }
+                  }
+                } 
+              }}
+              sx={{ width: '100%' }}
+            />
+          </LocalizationProvider>
           <TextField
             fullWidth
             label="Location"

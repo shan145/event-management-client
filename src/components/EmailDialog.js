@@ -176,8 +176,8 @@ const EmailDialog = ({ open, onClose, event, onSuccess }) => {
           onChange={handleInputChange('message')}
           multiline
           rows={6}
-          placeholder="Type your message here..."
-          helperText="This message will be sent privately to all confirmed attendees (BCC) along with event details."
+          placeholder="Type your message here... (press Enter for new lines)"
+          helperText="This message will be sent privately to all confirmed attendees (BCC) along with event details. Use Enter key to create new lines."
         />
       </DialogContent>
       

@@ -34,6 +34,9 @@ import {
   Edit,
   Email,
 } from '@mui/icons-material';
+import { DatePicker, TimePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import EmailDialog from './EmailDialog';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -60,8 +63,8 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
   const [editData, setEditData] = useState({
     title: '',
     description: '',
-    date: '',
-    time: '',
+    date: null,
+    time: null,
     location: '',
     locationUrl: '',
     maxAttendees: '',
@@ -78,6 +81,21 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
   const isGroupMemberFromResponse = isGoing || isWaitlisted || isNoGo; // If user has responded, they must be a member
   const isGroupMemberFromAccess = !!event.groupId; // If user can see the event, they must be a group member (events are group-specific)
   const isGroupMember = isGroupMemberFromPopulation || isGroupMemberFromResponse || isGroupMemberFromAccess;
+  
+  // Helper function to truncate text while respecting newlines
+  const truncateText = (text, maxLength) => {
+    if (!text || text.length <= maxLength) return text;
+    
+    // Find the first newline within the maxLength
+    const truncated = text.substring(0, maxLength);
+    const lastNewline = truncated.lastIndexOf('\n');
+    
+    if (lastNewline > 0) {
+      return truncated.substring(0, lastNewline) + '...';
+    }
+    
+    return truncated + '...';
+  };
   
   // Debug logging
   console.log('Event data:', {
@@ -177,18 +195,15 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
   };
 
   const handleEditEvent = () => {
-    // Format the date for the date input (YYYY-MM-DD) using Eastern Time
+    // Create dayjs objects for the date and time pickers
     const eventDateET = dayjs(event.date).tz('America/New_York');
-    const formattedDate = eventDateET.format('YYYY-MM-DD');
-    
-    // Format the time for the time input (HH:MM) - use the time from the event in ET
-    const formattedTime = event.time || '12:00';
+    const eventTime = event.time ? dayjs(`2000-01-01 ${event.time}`) : dayjs('2000-01-01 12:00');
     
     setEditData({
       title: event.title || '',
       description: event.description || '',
-      date: formattedDate,
-      time: formattedTime,
+      date: eventDateET,
+      time: eventTime,
       location: event.location || '',
       locationUrl: event.locationUrl || '',
       maxAttendees: event.maxAttendees || '',
@@ -202,8 +217,14 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
       setLoading(true);
       setError('');
       
+      // Format the date and time for the server
+      const formattedDate = editData.date ? editData.date.format('YYYY-MM-DD') : '';
+      const formattedTime = editData.time ? editData.time.format('HH:mm') : '';
+      
       const response = await axios.put(`/events/${event._id}`, {
         ...editData,
+        date: formattedDate,
+        time: formattedTime,
         maxAttendees: editData.maxAttendees ? parseInt(editData.maxAttendees) : null,
         guests: editData.guests ? parseInt(editData.guests) : 0,
       });
@@ -358,7 +379,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
                 }}
               >
                 {event.description.length > 80 && !showFullDescription
-                  ? `${event.description.substring(0, 80)}...`
+                  ? truncateText(event.description, 80)
                   : event.description}
               </Typography>
               {event.description.length > 80 && (
@@ -771,27 +792,51 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
             margin="normal"
             multiline
             rows={3}
+            placeholder="Enter event description... (press Enter for new lines)"
+            helperText="Use Enter key to create new lines in your description"
           />
-          <TextField
-            fullWidth
-            label="Date"
-            type="date"
-            value={editData.date}
-            onChange={(e) => setEditData({ ...editData, date: e.target.value })}
-            margin="normal"
-            required
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            fullWidth
-            label="Time"
-            type="time"
-            value={editData.time}
-            onChange={(e) => setEditData({ ...editData, time: e.target.value })}
-            margin="normal"
-            required
-            InputLabelProps={{ shrink: true }}
-          />
+                     <LocalizationProvider dateAdapter={AdapterDayjs}>
+             <DatePicker
+               label="Date"
+               value={editData.date}
+               onChange={(newValue) => setEditData({ ...editData, date: newValue })}
+               slotProps={{ 
+                 textField: { 
+                   fullWidth: true, 
+                   margin: 'normal',
+                   required: true,
+                   sx: {
+                     '& .MuiOutlinedInput-root': {
+                       '&:hover fieldset': {
+                         borderColor: 'primary.main',
+                       },
+                     }
+                   }
+                 } 
+               }}
+               sx={{ width: '100%' }}
+             />
+             <TimePicker
+               label="Time"
+               value={editData.time}
+               onChange={(newValue) => setEditData({ ...editData, time: newValue })}
+               slotProps={{ 
+                 textField: { 
+                   fullWidth: true, 
+                   margin: 'normal',
+                   required: true,
+                   sx: {
+                     '& .MuiOutlinedInput-root': {
+                       '&:hover fieldset': {
+                         borderColor: 'primary.main',
+                       },
+                     }
+                   }
+                 } 
+               }}
+               sx={{ width: '100%' }}
+             />
+           </LocalizationProvider>
           <TextField
             fullWidth
             label="Location"
