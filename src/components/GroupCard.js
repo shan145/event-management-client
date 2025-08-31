@@ -41,6 +41,7 @@ import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-picker
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import GroupEmailDialog from './GroupEmailDialog';
 import GroupAdminDialog from './GroupAdminDialog';
+import MemberManagementDialog from './MemberManagementDialog';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -124,12 +125,11 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole 
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editData, setEditData] = useState({ name: '', tags: [] });
   const [editTagInput, setEditTagInput] = useState('');
-  const [showMembersDialog, setShowMembersDialog] = useState(false);
   const [showLeaveGroupDialog, setShowLeaveGroupDialog] = useState(false);
   const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState(false);
   const [showGroupAdminDialog, setShowGroupAdminDialog] = useState(false);
+  const [showMemberManagementDialog, setShowMemberManagementDialog] = useState(false);
   const [showFullName, setShowFullName] = useState(false);
-  const [membersList, setMembersList] = useState([]);
   const [eventData, setEventData] = useState({
     title: '',
     description: '',
@@ -269,17 +269,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole 
   };
 
   const handleViewMembers = async () => {
-    try {
-      setMembersLoading(true);
-      setError('');
-      const response = await axios.get(`/groups/${group._id}/members`);
-      setMembersList(response.data.data.members);
-      setShowMembersDialog(true);
-    } catch (error) {
-      setError(error.response?.data?.message || 'Failed to load members');
-    } finally {
-      setMembersLoading(false);
-    }
+    setShowMemberManagementDialog(true);
   };
 
   const handleLeaveGroup = async () => {
@@ -546,6 +536,27 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole 
                 Manage Admins
               </Button>
             )}
+
+            {/* Manage Members - For group admins */}
+            {(isAdmin || isGroupAdmin) && (
+              <Button
+                size="small"
+                startIcon={<Group />}
+                onClick={() => setShowMemberManagementDialog(true)}
+                sx={{ 
+                  margin: 0,
+                  padding: '6px 16px',
+                  minWidth: 0,
+                  color: 'info.main',
+                  '&:hover': {
+                    backgroundColor: 'info.light',
+                    color: 'info.contrastText'
+                  }
+                }}
+              >
+                Manage Members
+              </Button>
+            )}
           </Box>
           
           {/* Admin Delete Actions */}
@@ -747,53 +758,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole 
         }}
       />
 
-      {/* Group Members Dialog */}
-      <Dialog 
-        open={showMembersDialog} 
-        onClose={() => setShowMembersDialog(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          Group Members
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            {group.name}
-          </Typography>
-        </DialogTitle>
-        <DialogContent>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          
-          <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
-            Members ({membersList.length})
-          </Typography>
-          
-          {membersList.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              No members found.
-            </Typography>
-          ) : (
-            <List dense>
-              {membersList.map((user) => (
-                <ListItem key={user._id}>
-                  <ListItemAvatar>
-                    <Avatar>{user?.firstName?.charAt(0) || 'U'}</Avatar>
-                  </ListItemAvatar>
-                  <ListItemText 
-                    primary={`${user?.firstName} ${user?.lastName}`}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowMembersDialog(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
+
 
       {/* Leave Group Confirmation Dialog */}
       <Dialog 
@@ -967,6 +932,14 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole 
       <GroupAdminDialog
         open={showGroupAdminDialog}
         onClose={() => setShowGroupAdminDialog(false)}
+        group={group}
+        onUpdate={onUpdate}
+      />
+
+      {/* Member Management Dialog */}
+      <MemberManagementDialog
+        open={showMemberManagementDialog}
+        onClose={() => setShowMemberManagementDialog(false)}
         group={group}
         onUpdate={onUpdate}
       />
