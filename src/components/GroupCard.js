@@ -34,11 +34,13 @@ import {
   Email,
   Visibility,
   ExitToApp,
-  LocationOn
+  LocationOn,
+  AdminPanelSettings
 } from '@mui/icons-material';
 import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import GroupEmailDialog from './GroupEmailDialog';
+import GroupAdminDialog from './GroupAdminDialog';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -115,7 +117,7 @@ const LocationPicker = ({ value, onChange, placeholder = "Enter location name...
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
+const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole }) => {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -125,6 +127,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
   const [showMembersDialog, setShowMembersDialog] = useState(false);
   const [showLeaveGroupDialog, setShowLeaveGroupDialog] = useState(false);
   const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState(false);
+  const [showGroupAdminDialog, setShowGroupAdminDialog] = useState(false);
   const [showFullName, setShowFullName] = useState(false);
   const [membersList, setMembersList] = useState([]);
   const [eventData, setEventData] = useState({
@@ -371,9 +374,18 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
             </Box>
             {isAdmin && (
               <Chip 
-                label="Admin" 
+                label="Super Admin" 
                 size="small" 
                 color="primary" 
+                variant="outlined"
+                sx={{ fontWeight: 500 }}
+              />
+            )}
+            {isGroupAdmin && !isAdmin && (
+              <Chip 
+                label="Group Admin" 
+                size="small" 
+                color="secondary" 
                 variant="outlined"
                 sx={{ fontWeight: 500 }}
               />
@@ -450,7 +462,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
             </Button>
 
             {/* Leave Group - Available to non-admin members */}
-            {!isAdmin && (
+            {!isAdmin && !isGroupAdmin && (
               <Button
                 size="small"
                 startIcon={<ExitToApp />}
@@ -471,7 +483,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
               </Button>
             )}
 
-            {isAdmin && (
+            {(isAdmin || isGroupAdmin) && (
               <>
                 <Button
                   size="small"
@@ -513,10 +525,31 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
                 </Button>
               </>
             )}
+
+            {/* Manage Admins - Only for main admin */}
+            {isAdmin && (
+              <Button
+                size="small"
+                startIcon={<AdminPanelSettings />}
+                onClick={() => setShowGroupAdminDialog(true)}
+                sx={{ 
+                  margin: 0,
+                  padding: '6px 16px',
+                  minWidth: 0,
+                  color: 'secondary.main',
+                  '&:hover': {
+                    backgroundColor: 'secondary.light',
+                    color: 'secondary.contrastText'
+                  }
+                }}
+              >
+                Manage Admins
+              </Button>
+            )}
           </Box>
           
           {/* Admin Delete Actions */}
-          {userRole === 'admin' && (
+          {isAdmin && (
             <Box sx={{ 
               display: 'flex', 
               width: '100%',
@@ -929,6 +962,14 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, userRole }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Group Admin Dialog */}
+      <GroupAdminDialog
+        open={showGroupAdminDialog}
+        onClose={() => setShowGroupAdminDialog(false)}
+        group={group}
+        onUpdate={onUpdate}
+      />
     </>
   );
 };

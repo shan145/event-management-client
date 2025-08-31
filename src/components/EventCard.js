@@ -114,7 +114,7 @@ const LocationPicker = ({ value, onChange, placeholder = "Enter location name...
   );
 };
 
-const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
+const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroupAdmin }) => {
   const [showWaitlistDialog, setShowWaitlistDialog] = useState(false);
   const [showAttendeesDialog, setShowAttendeesDialog] = useState(false);
   const [showUserAttendeesDialog, setShowUserAttendeesDialog] = useState(false);
@@ -137,7 +137,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId }) => {
     guests: '',
   });
 
-  const isAdmin = userRole === 'admin';
+  const isAdmin = userRole === 'admin' || isGroupAdmin;
   const isGoing = event.goingList?.some(user => user._id === currentUserId);
   const isWaitlisted = event.waitlist?.some(user => user._id === currentUserId);
   const isNoGo = event.noGoList?.some(user => user._id === currentUserId);

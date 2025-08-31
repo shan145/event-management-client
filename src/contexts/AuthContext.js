@@ -118,6 +118,8 @@ export const AuthProvider = ({ children }) => {
     clearError,
     setUser,
     isAdmin: user?.role === 'admin',
+    isGroupAdmin: user?.groupAdminOf && user.groupAdminOf.length > 0,
+    groupAdminOf: user?.groupAdminOf || [],
   };
 
   return (

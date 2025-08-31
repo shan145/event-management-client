@@ -292,6 +292,7 @@ const AdminDashboard = () => {
                     onUpdate={fetchData}
                     onDelete={handleDeleteGroup}
                     isAdmin={true}
+                    isGroupAdmin={user.groupAdminOf && user.groupAdminOf.includes(group._id)}
                     userRole={user.role}
                   />
                 </Grid>
@@ -315,6 +316,7 @@ const AdminDashboard = () => {
                     onDelete={handleDeleteEvent}
                     userRole={user.role}
                     currentUserId={user._id}
+                    isGroupAdmin={user.groupAdminOf && event.groupId && user.groupAdminOf.includes(event.groupId._id)}
                   />
                 </Grid>
               ))}
@@ -367,6 +369,14 @@ const AdminDashboard = () => {
                           </Typography>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {userItem.groups?.length || 0}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Group Admin Of
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {userItem.groupAdminOf?.length || 0}
                           </Typography>
                         </Box>
                       </Box>

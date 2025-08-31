@@ -111,7 +111,15 @@ const HomePage = () => {
               </Button>
               <Button
                 variant="contained"
-                onClick={() => navigate(user.role === 'admin' ? '/admin' : '/dashboard')}
+                onClick={() => {
+                  if (user.role === 'admin') {
+                    navigate('/admin');
+                  } else if (user.groupAdminOf && user.groupAdminOf.length > 0) {
+                    navigate('/dashboard');
+                  } else {
+                    navigate('/dashboard');
+                  }
+                }}
                 size="small"
                 endIcon={<ArrowRight />}
               >

@@ -237,6 +237,7 @@ const UserDashboard = () => {
                       group={group}
                       onUpdate={fetchUserData}
                       isAdmin={user.role === 'admin'}
+                      isGroupAdmin={user.groupAdminOf && user.groupAdminOf.includes(group._id)}
                       userRole={user.role}
                     />
                   </Grid>
@@ -284,6 +285,7 @@ const UserDashboard = () => {
                       onUpdate={fetchUserData}
                       userRole={user.role}
                       currentUserId={user._id}
+                      isGroupAdmin={user.groupAdminOf && event.groupId && user.groupAdminOf.includes(event.groupId._id)}
                     />
                   </Grid>
                 ))}
