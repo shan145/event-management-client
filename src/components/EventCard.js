@@ -115,18 +115,7 @@ const LocationPicker = ({ value, onChange, placeholder = "Enter location name...
 };
 
 const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroupAdmin }) => {
-  // Validate event prop
-  if (!event || !event._id) {
-    console.error('EventCard: Invalid event prop received:', event);
-    return (
-      <Card sx={{ p: 3, textAlign: 'center' }}>
-        <Typography color="error">
-          Error: Invalid event data. Please refresh the page.
-        </Typography>
-      </Card>
-    );
-  }
-
+  // All hooks must be called before any conditional returns
   const [showWaitlistDialog, setShowWaitlistDialog] = useState(false);
   const [showAttendeesDialog, setShowAttendeesDialog] = useState(false);
   const [showUserAttendeesDialog, setShowUserAttendeesDialog] = useState(false);
@@ -148,6 +137,29 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
     maxAttendees: '',
     guests: '',
   });
+
+  // Debug effect to track event prop changes - must be called before any conditional returns
+  useEffect(() => {
+    console.log('EventCard - Event prop changed:', {
+      eventExists: !!event,
+      eventId: event?._id,
+      eventTitle: event?.title,
+      eventType: typeof event,
+      eventKeys: event ? Object.keys(event) : 'N/A'
+    });
+  }, [event]);
+
+  // Validate event prop after hooks
+  if (!event || !event._id) {
+    console.error('EventCard: Invalid event prop received:', event);
+    return (
+      <Card sx={{ p: 3, textAlign: 'center' }}>
+        <Typography color="error">
+          Error: Invalid event data. Please refresh the page.
+        </Typography>
+      </Card>
+    );
+  }
 
   const isAdmin = userRole === 'admin' || isGroupAdmin;
   const isGoing = event.goingList?.some(user => user._id === currentUserId);
@@ -189,16 +201,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
     isGoing
   });
 
-  // Debug effect to track event prop changes
-  useEffect(() => {
-    console.log('EventCard - Event prop changed:', {
-      eventExists: !!event,
-      eventId: event?._id,
-      eventTitle: event?.title,
-      eventType: typeof event,
-      eventKeys: event ? Object.keys(event) : 'N/A'
-    });
-  }, [event]);
+
 
   const handleJoinWaitlist = async () => {
     try {
