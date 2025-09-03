@@ -233,13 +233,18 @@ const UserDashboard = () => {
               <Grid container spacing={3}>
                 {userGroups.map((group) => (
                   <Grid item xs={12} sm={6} md={3} key={group._id}>
-                    <GroupCard
-                      group={group}
-                      onUpdate={fetchUserData}
-                      isAdmin={user.role === 'admin'}
-                      isGroupAdmin={user.groupAdminOf && user.groupAdminOf.includes(group._id)}
-                      userRole={user.role}
-                    />
+                    {(() => {
+                      const isGroupAdmin = user.groupAdminOf && user.groupAdminOf.some(userGroup => userGroup._id === group._id);
+                      return (
+                        <GroupCard
+                          group={group}
+                          onUpdate={fetchUserData}
+                          isAdmin={user.role === 'admin'}
+                          isGroupAdmin={isGroupAdmin}
+                          userRole={user.role}
+                        />
+                      );
+                    })()}
                   </Grid>
                 ))}
               </Grid>
@@ -285,7 +290,10 @@ const UserDashboard = () => {
                       onUpdate={fetchUserData}
                       userRole={user.role}
                       currentUserId={user._id}
-                      isGroupAdmin={user.groupAdminOf && event.groupId && user.groupAdminOf.includes(event.groupId._id)}
+                      isGroupAdmin={(() => {
+                        const isGroupAdmin = user.groupAdminOf && event.groupId && user.groupAdminOf.some(group => group._id === event.groupId._id);
+                        return isGroupAdmin;
+                      })()}
                     />
                   </Grid>
                 ))}

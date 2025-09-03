@@ -115,6 +115,18 @@ const LocationPicker = ({ value, onChange, placeholder = "Enter location name...
 };
 
 const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroupAdmin }) => {
+  // Validate event prop
+  if (!event || !event._id) {
+    console.error('EventCard: Invalid event prop received:', event);
+    return (
+      <Card sx={{ p: 3, textAlign: 'center' }}>
+        <Typography color="error">
+          Error: Invalid event data. Please refresh the page.
+        </Typography>
+      </Card>
+    );
+  }
+
   const [showWaitlistDialog, setShowWaitlistDialog] = useState(false);
   const [showAttendeesDialog, setShowAttendeesDialog] = useState(false);
   const [showUserAttendeesDialog, setShowUserAttendeesDialog] = useState(false);
@@ -177,6 +189,17 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
     isGoing
   });
 
+  // Debug effect to track event prop changes
+  useEffect(() => {
+    console.log('EventCard - Event prop changed:', {
+      eventExists: !!event,
+      eventId: event?._id,
+      eventTitle: event?.title,
+      eventType: typeof event,
+      eventKeys: event ? Object.keys(event) : 'N/A'
+    });
+  }, [event]);
+
   const handleJoinWaitlist = async () => {
     try {
       setLoading(true);
@@ -192,10 +215,56 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
   const handleApproveUser = async (userId) => {
     try {
       setLoading(true);
-      await axios.post(`/events/${event._id}/approve`, { userId });
-      if (onUpdate) onUpdate();
+      setError('');
+      
+      // Additional validation to ensure event exists
+      if (!event || !event._id) {
+        throw new Error('Event data is invalid or missing');
+      }
+      
+      console.log('Attempting to approve user:', userId, 'for event:', event._id);
+      
+      const response = await axios.post(`/events/${event._id}/approve`, { userId });
+      
+      console.log('Approve user response:', response.data);
+      
+      if (response.data.success) {
+        // Success - update the parent component
+        if (onUpdate) onUpdate();
+      } else {
+        setError(response.data.message || 'Failed to approve user');
+      }
     } catch (error) {
-      setError(error.response?.data?.message || 'Failed to approve user');
+      console.error('Approve user error:', error);
+      
+      // Handle different types of errors
+      if (error.message === 'Event data is invalid or missing') {
+        setError('Event data is invalid. Please refresh the page.');
+      } else if (error.response) {
+        // Server responded with error status
+        const status = error.response.status;
+        const message = error.response.data?.message || 'Server error';
+        
+        if (status === 400) {
+          setError(`Bad request: ${message}`);
+        } else if (status === 401) {
+          setError('You are not authorized to approve users. Please log in again.');
+        } else if (status === 403) {
+          setError('Access denied. You do not have permission to approve users for this event.');
+        } else if (status === 404) {
+          setError('Event not found. It may have been deleted.');
+        } else if (status === 500) {
+          setError('Server error occurred. Please try again later.');
+        } else {
+          setError(`Error: ${message}`);
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        // Something else happened
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -218,10 +287,49 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
   const handleDenyUser = async (userId) => {
     try {
       setLoading(true);
-      await axios.post(`/events/${event._id}/nogo`, { userId });
-      if (onUpdate) onUpdate();
+      setError('');
+      
+      console.log('Attempting to deny user:', userId, 'for event:', event._id);
+      
+      const response = await axios.post(`/events/${event._id}/nogo`, { userId });
+      
+      console.log('Deny user response:', response.data);
+      
+      if (response.data.success) {
+        // Success - update the parent component
+        if (onUpdate) onUpdate();
+      } else {
+        setError(response.data.message || 'Failed to deny user');
+      }
     } catch (error) {
-      setError(error.response?.data?.message || 'Failed to deny user');
+      console.error('Deny user error:', error);
+      
+      // Handle different types of errors
+      if (error.response) {
+        // Server responded with error status
+        const status = error.response.status;
+        const message = error.response.data?.message || 'Server error';
+        
+        if (status === 400) {
+          setError(`Bad request: ${message}`);
+        } else if (status === 401) {
+          setError('You are not authorized to deny users. Please log in again.');
+        } else if (status === 403) {
+          setError('Access denied. You do not have permission to deny users for this event.');
+        } else if (status === 404) {
+          setError('Event not found. It may have been deleted.');
+        } else if (status === 500) {
+          setError('Server error occurred. Please try again later.');
+        } else {
+          setError(`Error: ${message}`);
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        // Something else happened
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -230,10 +338,49 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
   const handleMoveToNoGo = async (userId) => {
     try {
       setLoading(true);
-      await axios.post(`/events/${event._id}/nogo`, { userId });
-      if (onUpdate) onUpdate();
+      setError('');
+      
+      console.log('Attempting to move user to no-go:', userId, 'for event:', event._id);
+      
+      const response = await axios.post(`/events/${event._id}/nogo`, { userId });
+      
+      console.log('Move to no-go response:', response.data);
+      
+      if (response.data.success) {
+        // Success - update the parent component
+        if (onUpdate) onUpdate();
+      } else {
+        setError(response.data.message || 'Failed to move user to not going');
+      }
     } catch (error) {
-      setError(error.response?.data?.message || 'Failed to move user to not going');
+      console.error('Move to no-go error:', error);
+      
+      // Handle different types of errors
+      if (error.response) {
+        // Server responded with error status
+        const status = error.response.status;
+        const message = error.response.data?.message || 'Server error';
+        
+        if (status === 400) {
+          setError(`Bad request: ${message}`);
+        } else if (status === 401) {
+          setError('You are not authorized to move users. Please log in again.');
+        } else if (status === 403) {
+          setError('Access denied. You do not have permission to move users for this event.');
+        } else if (status === 404) {
+          setError('Event not found. It may have been deleted.');
+        } else if (status === 500) {
+          setError('Server error occurred. Please try again later.');
+        } else {
+          setError(`Error: ${message}`);
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        // Something else happened
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -313,9 +460,15 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
     try {
       setLoading(true);
       setError('');
-      await axios.delete(`/events/${event._id}`);
       
-              // Immediately update parent state
+      console.log('Attempting to delete event:', event._id);
+      
+      const response = await axios.delete(`/events/${event._id}`);
+      
+      console.log('Delete response:', response.data);
+      
+      if (response.data.success) {
+        // Success - immediately update parent state
         if (onDelete) {
           onDelete(event._id);
         }
@@ -324,11 +477,38 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
         if (onUpdate) {
           onUpdate();
         }
-      
-      setShowDeleteConfirmDialog(false);
+        
+        setShowDeleteConfirmDialog(false);
+      } else {
+        setError(response.data.message || 'Failed to delete event');
+      }
     } catch (error) {
       console.error('Delete event error:', error);
-      setError(error.response?.data?.message || 'Failed to delete event');
+      
+      // Handle different types of errors
+      if (error.response) {
+        // Server responded with error status
+        const status = error.response.status;
+        const message = error.response.data?.message || 'Server error';
+        
+        if (status === 401) {
+          setError('You are not authorized to delete this event. Please log in again.');
+        } else if (status === 403) {
+          setError('Access denied. You do not have permission to delete this event.');
+        } else if (status === 404) {
+          setError('Event not found. It may have been deleted already.');
+        } else if (status === 500) {
+          setError('Server error occurred. Please try again later.');
+        } else {
+          setError(`Error: ${message}`);
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        // Something else happened
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -762,7 +942,29 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
                   <Button
                     size="small"
                     variant="contained"
-                    onClick={() => handleApproveUser(user._id)}
+                    onClick={() => {
+                      console.log('Approve button clicked for user:', {
+                        userId: user._id,
+                        userName: `${user?.firstName} ${user?.lastName}`,
+                        eventId: event?._id,
+                        eventTitle: event?.title,
+                        eventExists: !!event,
+                        currentUser: {
+                          id: currentUserId,
+                          role: userRole,
+                          isGroupAdmin: isGroupAdmin
+                        }
+                      });
+                      
+                      // Additional validation before calling the function
+                      if (!event || !event._id) {
+                        console.error('Event is undefined or missing _id when approve button clicked');
+                        setError('Event data is invalid. Please refresh the page.');
+                        return;
+                      }
+                      
+                      handleApproveUser(user._id);
+                    }}
                     disabled={loading}
                   >
                     Approve

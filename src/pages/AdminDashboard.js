@@ -79,10 +79,26 @@ const AdminDashboard = () => {
         axios.get('/users'),
       ]);
       
+      // Validate events data structure
+      if (eventsRes.data.data && eventsRes.data.data.events) {
+        const events = eventsRes.data.data.events;
+        
+        // Check for any events with missing _id
+        const invalidEvents = events.filter(event => !event || !event._id);
+        if (invalidEvents.length > 0) {
+          console.error('AdminDashboard - Found events with missing _id:', invalidEvents);
+        }
+        
+        setEvents(events);
+      } else {
+        console.error('AdminDashboard - Invalid events data structure:', eventsRes.data);
+        setEvents([]);
+      }
+      
       setGroups(groupsRes.data.data.groups);
-      setEvents(eventsRes.data.data.events);
       setUsers(usersRes.data.data.users);
     } catch (error) {
+      console.error('AdminDashboard - fetchData error:', error);
       setError('Failed to fetch data');
     } finally {
       setLoading(false);
@@ -292,7 +308,10 @@ const AdminDashboard = () => {
                     onUpdate={fetchData}
                     onDelete={handleDeleteGroup}
                     isAdmin={true}
-                    isGroupAdmin={user.groupAdminOf && user.groupAdminOf.includes(group._id)}
+                    isGroupAdmin={(() => {
+                      const isGroupAdmin = user.groupAdminOf && user.groupAdminOf.includes(group._id);
+                      return isGroupAdmin;
+                    })()}
                     userRole={user.role}
                   />
                 </Grid>
@@ -308,18 +327,26 @@ const AdminDashboard = () => {
               Events
             </Typography>
             <Grid container spacing={3}>
-              {events.map((event) => (
-                <Grid item xs={12} sm={6} md={3} key={event._id} sx={{ minWidth: 0, maxWidth: '100%' }}>
-                  <EventCard
-                    event={event}
-                    onUpdate={fetchData}
-                    onDelete={handleDeleteEvent}
-                    userRole={user.role}
-                    currentUserId={user._id}
-                    isGroupAdmin={user.groupAdminOf && event.groupId && user.groupAdminOf.includes(event.groupId._id)}
-                  />
-                </Grid>
-              ))}
+              {events.map((event, index) => {
+                // Skip invalid events
+                if (!event || !event._id) {
+                  console.error(`AdminDashboard - Skipping invalid event at index ${index}:`, event);
+                  return null;
+                }
+                
+                return (
+                  <Grid item xs={12} sm={6} md={3} key={event._id} sx={{ minWidth: 0, maxWidth: '100%' }}>
+                    <EventCard
+                      event={event}
+                      onUpdate={fetchData}
+                      onDelete={handleDeleteEvent}
+                      userRole={user.role}
+                      currentUserId={user._id}
+                      isGroupAdmin={user.groupAdminOf && event.groupId && user.groupAdminOf.some(group => group._id === event.groupId._id)}
+                    />
+                  </Grid>
+                );
+              })}
             </Grid>
           </Box>
         )}

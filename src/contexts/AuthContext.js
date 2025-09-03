@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -19,6 +19,35 @@ export const AuthProvider = ({ children }) => {
   // Set up axios defaults
   axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
 
+  // Use useCallback to prevent function recreation on every render
+  const checkAuthStatus = useCallback(async () => {
+    try {
+      const response = await axios.get('/auth/me');
+      
+      const user = response.data.data.user;
+      
+      // Validate user object
+      if (!user || !user._id || !user.role) {
+        console.error('Invalid user object received:', user);
+        throw new Error('Invalid user data received from server');
+      }
+      
+      // Ensure role is valid
+      if (!['admin', 'regular'].includes(user.role)) {
+        console.warn('User has unexpected role:', user.role, 'Defaulting to regular');
+        user.role = 'regular';
+      }
+      
+      setUser(user);
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Check if user is logged in on app start
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -28,19 +57,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const response = await axios.get('/auth/me');
-      setUser(response.data.data.user);
-    } catch (error) {
-      localStorage.removeItem('token');
-      delete axios.defaults.headers.common['Authorization'];
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [checkAuthStatus]);
 
   const login = async (email, password) => {
     try {
