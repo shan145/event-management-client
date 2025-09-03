@@ -706,11 +706,16 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
             
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <People sx={{ fontSize: 18, color: 'text.secondary' }} />
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                {(event.goingList?.length || 0) + (event.guests || 0)}
-                {event.maxAttendees ? ` / ${event.maxAttendees}` : ''} total 
-                ({event.goingList?.length || 0} going{event.guests ? ` + ${event.guests} guests` : ''}) • {event.waitlist?.length || 0} waitlisted
-              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                  {(event.goingList?.length || 0) + (event.guests || 0)}
+                  {event.maxAttendees ? ` / ${event.maxAttendees}` : ''} total 
+                  ({event.goingList?.length || 0} going{event.guests ? ` + ${event.guests} guests` : ''})
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                  {event.waitlist?.length || 0} waitlisted
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </CardContent>
