@@ -85,7 +85,7 @@ const SignupPage = () => {
             <ArrowBack />
           </IconButton>
           <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
-            Eventify
+            Eventable
           </Typography>
         </Box>
 
@@ -102,7 +102,7 @@ const SignupPage = () => {
               Create your account
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Get started with Eventify today
+              Get started with Eventable today
             </Typography>
           </Box>
 

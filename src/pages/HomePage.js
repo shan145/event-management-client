@@ -97,7 +97,7 @@ const HomePage = () => {
               color: 'text.primary',
             }}
           >
-            Eventify
+            Eventable
           </Typography>
           
           {user ? (
@@ -268,7 +268,7 @@ const HomePage = () => {
               Ready to get started?
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-              Join thousands of organizers who trust Eventify for their events.
+              Join thousands of organizers who trust Eventable for their events.
             </Typography>
             <Button
               variant="contained"

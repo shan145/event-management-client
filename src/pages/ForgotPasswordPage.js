@@ -64,7 +64,7 @@ const ForgotPasswordPage = () => {
             <ArrowBack />
           </IconButton>
           <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
-            Eventify
+            Eventable
           </Typography>
         </Box>
 

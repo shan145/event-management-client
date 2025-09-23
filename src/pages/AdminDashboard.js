@@ -177,7 +177,7 @@ const AdminDashboard = () => {
       <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', borderBottom: '1px solid #e1e1e1' }}>
         <Toolbar sx={{ py: 1 }}>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            Eventify Admin
+            Eventable Admin
           </Typography>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
