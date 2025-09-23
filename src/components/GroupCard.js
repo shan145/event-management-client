@@ -47,7 +47,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
-// Enhanced Location Picker component
+// Simple Location Input component
 const LocationPicker = ({ value, onChange, placeholder = "Enter location name..." }) => {
   const [inputValue, setInputValue] = useState('');
 
@@ -61,56 +61,18 @@ const LocationPicker = ({ value, onChange, placeholder = "Enter location name...
     onChange({ name: newValue, url: '' });
   };
 
-  const handlePickFromMaps = () => {
-    if (inputValue.trim()) {
-      const googleMapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(inputValue.trim())}`;
-      onChange({ name: inputValue.trim(), url: googleMapsUrl });
-      
-      // Open Google Maps in a new tab
-      window.open(googleMapsUrl, '_blank');
-    }
-  };
-
-  const handleOpenMapsPicker = () => {
-    // Open Google Maps location picker
-    const mapsUrl = 'https://www.google.com/maps';
-    window.open(mapsUrl, '_blank');
-  };
-
   return (
-    <Box>
-      <TextField
-        fullWidth
-        label="Location"
-        value={inputValue}
-        onChange={handleInputChange}
-        margin="normal"
-        placeholder={placeholder}
-        InputProps={{
-          startAdornment: <LocationOn sx={{ mr: 1, color: 'text.secondary' }} />
-        }}
-      />
-      
-      <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={handlePickFromMaps}
-          disabled={!inputValue.trim()}
-          startIcon={<LocationOn />}
-        >
-          Open in Maps
-        </Button>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={handleOpenMapsPicker}
-          startIcon={<LocationOn />}
-        >
-          Pick Location
-        </Button>
-      </Box>
-    </Box>
+    <TextField
+      fullWidth
+      label="Location"
+      value={inputValue}
+      onChange={handleInputChange}
+      margin="normal"
+      placeholder={placeholder}
+      InputProps={{
+        startAdornment: <LocationOn sx={{ mr: 1, color: 'text.secondary' }} />
+      }}
+    />
   );
 };
 

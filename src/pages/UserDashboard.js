@@ -29,6 +29,7 @@ import {
   HomeOutlined,
   MoreVert,
   Settings,
+  History,
 } from '@mui/icons-material';
 import GroupCard from '../components/GroupCard';
 import EventCard from '../components/EventCard';
@@ -39,6 +40,7 @@ const UserDashboard = () => {
   const { user, logout } = useAuth();
   const [userGroups, setUserGroups] = useState([]);
   const [userEvents, setUserEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState(() => {
@@ -59,13 +61,15 @@ const UserDashboard = () => {
   const fetchUserData = async () => {
     try {
       setLoading(true);
-      const [groupsRes, eventsRes] = await Promise.all([
+      const [groupsRes, eventsRes, pastEventsRes] = await Promise.all([
         axios.get('/groups/user'),
         axios.get('/events/user'),
+        axios.get('/events/past'),
       ]);
       
       setUserGroups(groupsRes.data.data.groups);
       setUserEvents(eventsRes.data.data.events);
+      setPastEvents(pastEventsRes.data.data.events);
     } catch (error) {
       setError('Failed to fetch data');
     } finally {
@@ -196,6 +200,12 @@ const UserDashboard = () => {
                 iconPosition="start"
                 sx={{ gap: 1 }}
               />
+              <Tab 
+                label="Past Events" 
+                icon={<History />} 
+                iconPosition="start"
+                sx={{ gap: 1 }}
+              />
             </Tabs>
           </Box>
         </Box>
@@ -294,6 +304,57 @@ const UserDashboard = () => {
                         const isGroupAdmin = user.groupAdminOf && event.groupId && user.groupAdminOf.some(group => group._id === event.groupId._id);
                         return isGroupAdmin;
                       })()}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Box>
+        )}
+
+        {/* Past Events Tab */}
+        {activeTab === 2 && (
+          <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+              <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                Past Events
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                {pastEvents.length} event{pastEvents.length !== 1 ? 's' : ''}
+              </Typography>
+            </Box>
+            
+            {pastEvents.length === 0 ? (
+              <Card sx={{ 
+                p: 6, 
+                textAlign: 'center',
+                border: '1px solid #e1e1e1',
+                backgroundColor: '#fafafa',
+              }}>
+                <CardContent>
+                  <History sx={{ fontSize: 48, color: 'text.secondary', mb: 3 }} />
+                  <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+                    No Past Events
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
+                    You haven't participated in any events yet. Join some groups and start attending events!
+                  </Typography>
+                </CardContent>
+              </Card>
+            ) : (
+              <Grid container spacing={3}>
+                {pastEvents.map((event) => (
+                  <Grid item xs={12} sm={6} md={3} key={event._id} sx={{ minWidth: 0, maxWidth: '100%' }}>
+                    <EventCard
+                      event={event}
+                      onUpdate={fetchUserData}
+                      userRole={user.role}
+                      currentUserId={user._id}
+                      isGroupAdmin={(() => {
+                        const isGroupAdmin = user.groupAdminOf && event.groupId && user.groupAdminOf.some(group => group._id === event.groupId._id);
+                        return isGroupAdmin;
+                      })()}
+                      isPastEvent={true}
                     />
                   </Grid>
                 ))}

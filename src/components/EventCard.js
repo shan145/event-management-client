@@ -47,7 +47,7 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-// Enhanced Location Picker component
+// Simple Location Input component
 const LocationPicker = ({ value, onChange, placeholder = "Enter location name..." }) => {
   const [inputValue, setInputValue] = useState('');
 
@@ -61,60 +61,22 @@ const LocationPicker = ({ value, onChange, placeholder = "Enter location name...
     onChange({ name: newValue, url: '' });
   };
 
-  const handlePickFromMaps = () => {
-    if (inputValue.trim()) {
-      const googleMapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(inputValue.trim())}`;
-      onChange({ name: inputValue.trim(), url: googleMapsUrl });
-      
-      // Open Google Maps in a new tab
-      window.open(googleMapsUrl, '_blank');
-    }
-  };
-
-  const handleOpenMapsPicker = () => {
-    // Open Google Maps location picker
-    const mapsUrl = 'https://www.google.com/maps';
-    window.open(mapsUrl, '_blank');
-  };
-
   return (
-    <Box>
-      <TextField
-        fullWidth
-        label="Location"
-        value={inputValue}
-        onChange={handleInputChange}
-        margin="normal"
-        placeholder={placeholder}
-        InputProps={{
-          startAdornment: <LocationOn sx={{ mr: 1, color: 'text.secondary' }} />
-        }}
-      />
-      
-      <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={handlePickFromMaps}
-          disabled={!inputValue.trim()}
-          startIcon={<LocationOn />}
-        >
-          Open in Maps
-        </Button>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={handleOpenMapsPicker}
-          startIcon={<LocationOn />}
-        >
-          Pick Location
-        </Button>
-      </Box>
-    </Box>
+    <TextField
+      fullWidth
+      label="Location"
+      value={inputValue}
+      onChange={handleInputChange}
+      margin="normal"
+      placeholder={placeholder}
+      InputProps={{
+        startAdornment: <LocationOn sx={{ mr: 1, color: 'text.secondary' }} />
+      }}
+    />
   );
 };
 
-const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroupAdmin }) => {
+const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroupAdmin, isPastEvent = false }) => {
   // All hooks must be called before any conditional returns
   const [showWaitlistDialog, setShowWaitlistDialog] = useState(false);
   const [showAttendeesDialog, setShowAttendeesDialog] = useState(false);
@@ -397,7 +359,8 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
     try {
       setLoading(true);
       setShowNotGoingConfirmDialog(false);
-      await axios.post(`/events/${event._id}/nogo`, { userId: currentUserId });
+      // For regular users, don't send userId - they're marking themselves
+      await axios.post(`/events/${event._id}/nogo`);
       if (onUpdate) onUpdate();
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to mark as not going');
@@ -532,7 +495,9 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
   };
 
   const getStatusChip = () => {
-    if (isGoing) {
+    if (isPastEvent) {
+      return <Chip label="Past Event" color="default" size="small" sx={{ fontWeight: 500 }} />;
+    } else if (isGoing) {
       return <Chip label="Going" color="success" size="small" sx={{ fontWeight: 500 }} />;
     } else if (isWaitlisted) {
       return <Chip label="Waitlisted" color="warning" size="small" sx={{ fontWeight: 500 }} />;
@@ -741,8 +706,8 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
             margin: 0,
             padding: 0
           }}>
-            {/* Join Waitlist button - available for users who haven't responded or are marked as not going */}
-            {(!isGoing && !isWaitlisted) && (
+            {/* Join Waitlist button - available for users who haven't responded or are marked as not going (disabled for past events) */}
+            {(!isGoing && !isWaitlisted) && !isPastEvent && (
               <Button
                 size="small"
                 startIcon={<PersonAdd />}
@@ -758,8 +723,8 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
               </Button>
             )}
             
-            {/* Not Going button - available for everyone except those already marked as not going */}
-            {!isNoGo && (
+            {/* Not Going button - available for everyone except those already marked as not going (disabled for past events) */}
+            {!isNoGo && !isPastEvent && (
               <Button
                 size="small"
                 startIcon={<Cancel />}
