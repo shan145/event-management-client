@@ -33,11 +33,13 @@ import {
   Visibility,
   Edit,
   Email,
+  Message,
 } from '@mui/icons-material';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import EmailDialog from './EmailDialog';
+import EventChatDialog from './EventChatDialog';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -83,6 +85,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
   const [showUserAttendeesDialog, setShowUserAttendeesDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [showChatDialog, setShowChatDialog] = useState(false);
   const [showNotGoingConfirmDialog, setShowNotGoingConfirmDialog] = useState(false);
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -774,18 +777,48 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
 
             {/* Non-admin Group Member Actions */}
             {!isAdmin && isGroupMember && (
+              <>
+                <Button
+                  size="small"
+                  startIcon={<Visibility />}
+                  onClick={handleViewAttendees}
+                  disabled={loading}
+                  sx={{ 
+                    margin: 0,
+                    padding: '6px 16px',
+                    minWidth: 0
+                  }}
+                >
+                  View Attendees
+                </Button>
+                <Button
+                  size="small"
+                  startIcon={<Message />}
+                  onClick={() => setShowChatDialog(true)}
+                  sx={{ 
+                    margin: 0,
+                    padding: '6px 16px',
+                    minWidth: 0
+                  }}
+                >
+                  Chat
+                </Button>
+              </>
+            )}
+            
+            {/* Admin Chat Access */}
+            {isAdmin && (
               <Button
                 size="small"
-                startIcon={<Visibility />}
-                onClick={handleViewAttendees}
-                disabled={loading}
+                startIcon={<Message />}
+                onClick={() => setShowChatDialog(true)}
                 sx={{ 
                   margin: 0,
                   padding: '6px 16px',
                   minWidth: 0
                 }}
               >
-                View Attendees
+                Chat
               </Button>
             )}
           </Box>
@@ -1136,6 +1169,13 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
           // Optional: You can add success handling here
           console.log('Email sent successfully');
         }}
+      />
+
+      {/* Chat Dialog */}
+      <EventChatDialog
+        open={showChatDialog}
+        onClose={() => setShowChatDialog(false)}
+        eventId={event._id}
       />
 
       {/* User Attendees Dialog (Non-admin view) */}
