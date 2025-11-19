@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -9,14 +9,12 @@ import {
   Stack,
   Button,
   Divider,
-  Link as MuiLink,
   IconButton,
 } from '@mui/material';
 import { 
   ArrowBack, 
   HelpOutline, 
   Email, 
-  Phone, 
   QuestionAnswer,
   BugReport,
   Feedback

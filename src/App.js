@@ -13,6 +13,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import InvitePage from './pages/InvitePage';
 import SupportPage from './pages/SupportPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
 
@@ -224,6 +225,7 @@ function App() {
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             <Route path="/join/:token" element={<InvitePage />} />
             <Route path="/support" element={<SupportPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route 
               path="/settings" 
               element={
