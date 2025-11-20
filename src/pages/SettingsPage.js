@@ -33,6 +33,7 @@ import {
   LogoutOutlined,
   MoreVert,
   Dashboard,
+  WarningAmber,
 } from '@mui/icons-material';
 import axios from 'axios';
 
@@ -819,6 +820,38 @@ const SettingsPage = () => {
             </Box>
           </Box>
         )}
+
+        <Card sx={{ mt: 4, border: '1px solid', borderColor: 'error.light', borderRadius: 2 }}>
+          <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+            <Grid container spacing={3} alignItems="center">
+              <Grid item xs={12} md={8}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <WarningAmber color="error" />
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                      Delete your account
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Permanently remove your profile, leave all groups, and be removed from every event. This action cannot be undone.
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Box sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => navigate('/delete-account')}
+                    sx={{ px: 3 }}
+                  >
+                    Continue to delete page
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
       </Container>
     </Box>
   );

@@ -120,6 +120,24 @@ export const AuthProvider = ({ children }) => {
     setError(null);
   };
 
+  const deleteAccount = async (currentPassword) => {
+    try {
+      const response = await axios.delete('/users/me', {
+        data: { currentPassword }
+      });
+
+      logout();
+
+      return {
+        success: true,
+        message: response.data?.message || 'Account deleted successfully'
+      };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to delete account';
+      return { success: false, error: message };
+    }
+  };
+
   const clearError = () => {
     setError(null);
   };
@@ -132,6 +150,7 @@ export const AuthProvider = ({ children }) => {
     signup,
     createAdmin,
     logout,
+    deleteAccount,
     clearError,
     setUser,
     isAdmin: user?.role === 'admin',

@@ -13,6 +13,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import InvitePage from './pages/InvitePage';
 import SupportPage from './pages/SupportPage';
+import DeleteAccountPage from './pages/DeleteAccountPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
@@ -249,6 +250,14 @@ function App() {
                   <UserDashboard />
                 </PrivateRoute>
               } 
+            />
+            <Route 
+              path="/delete-account"
+              element={
+                <PrivateRoute>
+                  <DeleteAccountPage />
+                </PrivateRoute>
+              }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
