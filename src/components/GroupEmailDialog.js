@@ -62,7 +62,18 @@ const GroupEmailDialog = ({ open, onClose, group, onSuccess }) => {
       }, 2000);
 
     } catch (error) {
-      setError(error.response?.data?.message || 'Failed to send email');
+      const errorMessage = error.response?.data?.message || 'Failed to send email';
+      
+      // Check if it's an authentication error
+      if (error.response?.status === 401) {
+        if (errorMessage.includes('expired') || errorMessage.includes('token')) {
+          setError('Your session has expired. Please log in again and try sending the email.');
+        } else {
+          setError('Authentication required. Please log in again.');
+        }
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }

@@ -19,6 +19,30 @@ export const AuthProvider = ({ children }) => {
   // Set up axios defaults
   axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
 
+  // Set up axios interceptor to handle token expiration
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          // Token expired or invalid - clear it and redirect to login
+          localStorage.removeItem('token');
+          delete axios.defaults.headers.common['Authorization'];
+          setUser(null);
+          // Optionally redirect to login page
+          if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
+            window.location.href = '/login';
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, []);
+
   // Use useCallback to prevent function recreation on every render
   const checkAuthStatus = useCallback(async () => {
     try {
