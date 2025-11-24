@@ -250,7 +250,8 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole 
   };
 
   const copyInviteLink = () => {
-    const inviteLink = `${window.location.origin}/join/${group.inviteToken}`;
+    // Always use us-eventify.com (non-www) to prevent redirect issues with universal links
+    const inviteLink = `https://us-eventify.com/join/${group.inviteToken}`;
     console.log('Generated invite link:', inviteLink);
     console.log('Group invite token:', group.inviteToken);
     navigator.clipboard.writeText(inviteLink);
@@ -559,7 +560,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole 
           </Typography>
           <TextField
             fullWidth
-            value={`${window.location.origin}/join/${group.inviteToken}`}
+            value={`https://us-eventify.com/join/${group.inviteToken}`}
             variant="outlined"
             size="small"
             InputProps={{ readOnly: true }}
