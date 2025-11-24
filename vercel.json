@@ -1,0 +1,41 @@
+{
+  "rewrites": [
+    {
+      "source": "/.well-known/apple-app-site-association",
+      "destination": "https://event-management-server-qxej.onrender.com/.well-known/apple-app-site-association"
+    },
+    {
+      "source": "/apple-app-site-association",
+      "destination": "https://event-management-server-qxej.onrender.com/apple-app-site-association"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/.well-known/apple-app-site-association",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "/apple-app-site-association",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ]
+}
+
