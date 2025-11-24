@@ -98,6 +98,8 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
     description: '',
     date: null,
     time: null,
+    endDate: null,
+    endTime: null,
     location: { name: '', url: '' },
     maxAttendees: '',
     guests: '',
@@ -380,12 +382,16 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
     // Create dayjs objects for the date and time pickers
     const eventDateET = dayjs(event.date).tz('America/New_York');
     const eventTime = event.time ? dayjs(`2000-01-01 ${event.time}`) : dayjs('2000-01-01 12:00');
+    const eventEndDateET = event.endDate ? dayjs(event.endDate).tz('America/New_York') : null;
+    const eventEndTime = event.endTime ? dayjs(`2000-01-01 ${event.endTime}`) : null;
     
     setEditData({
       title: event.title || '',
       description: event.description || '',
       date: eventDateET,
       time: eventTime,
+      endDate: eventEndDateET,
+      endTime: eventEndTime,
       location: { name: event.location || '', url: event.locationUrl || '' },
       maxAttendees: event.maxAttendees || '',
       guests: event.guests || '',
@@ -401,11 +407,15 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
       // Format the date and time for the server
       const formattedDate = editData.date ? editData.date.format('YYYY-MM-DD') : '';
       const formattedTime = editData.time ? editData.time.format('HH:mm') : '';
+      const formattedEndDate = editData.endDate ? editData.endDate.format('YYYY-MM-DD') : null;
+      const formattedEndTime = editData.endTime ? editData.endTime.format('HH:mm') : null;
       
       const response = await axios.put(`/events/${event._id}`, {
         ...editData,
         date: formattedDate,
         time: formattedTime,
+        endDate: formattedEndDate,
+        endTime: formattedEndTime,
         location: editData.location.name,
         locationUrl: editData.location.url,
         maxAttendees: editData.maxAttendees ? parseInt(editData.maxAttendees) : null,
@@ -628,6 +638,14 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
               <Schedule sx={{ fontSize: 18, color: 'text.secondary' }} />
               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                 {dayjs(event.date).tz('America/New_York').format('MMM DD, YYYY h:mm A')} ET
+                {event.endDate && event.endTime && (
+                  <> - {(() => {
+                    const endDateET = dayjs(event.endDate).tz('America/New_York');
+                    const [hours, minutes] = event.endTime.split(':');
+                    const endDateTime = endDateET.hour(parseInt(hours)).minute(parseInt(minutes));
+                    return endDateTime.format('MMM DD, YYYY h:mm A') + ' ET';
+                  })()}</>
+                )}
               </Typography>
             </Box>
             
@@ -1092,7 +1110,7 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
                sx={{ width: '100%' }}
              />
              <TimePicker
-               label="Time"
+               label="Start Time"
                value={editData.time}
                onChange={(newValue) => setEditData({ ...editData, time: newValue })}
                slotProps={{ 
@@ -1100,6 +1118,44 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
                    fullWidth: true, 
                    margin: 'normal',
                    required: true,
+                   sx: {
+                     '& .MuiOutlinedInput-root': {
+                       '&:hover fieldset': {
+                         borderColor: 'primary.main',
+                       },
+                     }
+                   }
+                 } 
+               }}
+               sx={{ width: '100%' }}
+             />
+             <DatePicker
+               label="End Date (optional)"
+               value={editData.endDate}
+               onChange={(newValue) => setEditData({ ...editData, endDate: newValue })}
+               slotProps={{ 
+                 textField: { 
+                   fullWidth: true, 
+                   margin: 'normal',
+                   sx: {
+                     '& .MuiOutlinedInput-root': {
+                       '&:hover fieldset': {
+                         borderColor: 'primary.main',
+                       },
+                     }
+                   }
+                 } 
+               }}
+               sx={{ width: '100%' }}
+             />
+             <TimePicker
+               label="End Time (optional)"
+               value={editData.endTime}
+               onChange={(newValue) => setEditData({ ...editData, endTime: newValue })}
+               slotProps={{ 
+                 textField: { 
+                   fullWidth: true, 
+                   margin: 'normal',
                    sx: {
                      '& .MuiOutlinedInput-root': {
                        '&:hover fieldset': {

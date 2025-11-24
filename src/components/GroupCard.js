@@ -97,6 +97,8 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole 
     description: '',
     date: null,
     time: null,
+    endDate: null,
+    endTime: null,
     location: { name: '', url: '' },
     maxAttendees: '',
     guests: '',
@@ -145,18 +147,22 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole 
       // Format the date and time for the server
       const formattedDate = eventData.date ? eventData.date.format('YYYY-MM-DD') : '';
       const formattedTime = eventData.time ? eventData.time.format('HH:mm') : '';
+      const formattedEndDate = eventData.endDate ? eventData.endDate.format('YYYY-MM-DD') : null;
+      const formattedEndTime = eventData.endTime ? eventData.endTime.format('HH:mm') : null;
       
       const response = await axios.post(`/groups/${group._id}/events`, {
         ...eventData,
         date: formattedDate,
         time: formattedTime,
+        endDate: formattedEndDate,
+        endTime: formattedEndTime,
         location: eventData.location.name,
         locationUrl: eventData.location.url,
         maxAttendees: eventData.maxAttendees ? parseInt(eventData.maxAttendees) : null,
       });
       
       setShowEventDialog(false);
-      setEventData({ title: '', description: '', date: null, time: null, location: { name: '', url: '' }, maxAttendees: '', guests: '', notifyGroup: false });
+      setEventData({ title: '', description: '', date: null, time: null, endDate: null, endTime: null, location: { name: '', url: '' }, maxAttendees: '', guests: '', notifyGroup: false });
       if (onUpdate) onUpdate();
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create event');
@@ -629,7 +635,7 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole 
               sx={{ width: '100%' }}
             />
             <TimePicker
-              label="Time"
+              label="Start Time"
               value={eventData.time}
               onChange={(newValue) => setEventData({ ...eventData, time: newValue })}
               slotProps={{ 
@@ -637,6 +643,44 @@ const GroupCard = ({ group, onUpdate, onDelete, isAdmin, isGroupAdmin, userRole 
                   fullWidth: true, 
                   margin: 'normal',
                   required: true,
+                  sx: {
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      },
+                    }
+                  }
+                } 
+              }}
+              sx={{ width: '100%' }}
+            />
+            <DatePicker
+              label="End Date (optional)"
+              value={eventData.endDate}
+              onChange={(newValue) => setEventData({ ...eventData, endDate: newValue })}
+              slotProps={{ 
+                textField: { 
+                  fullWidth: true, 
+                  margin: 'normal',
+                  sx: {
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      },
+                    }
+                  }
+                } 
+              }}
+              sx={{ width: '100%' }}
+            />
+            <TimePicker
+              label="End Time (optional)"
+              value={eventData.endTime}
+              onChange={(newValue) => setEventData({ ...eventData, endTime: newValue })}
+              slotProps={{ 
+                textField: { 
+                  fullWidth: true, 
+                  margin: 'normal',
                   sx: {
                     '& .MuiOutlinedInput-root': {
                       '&:hover fieldset': {
