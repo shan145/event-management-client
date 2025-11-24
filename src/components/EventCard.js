@@ -634,19 +634,23 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
           )}
           
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Schedule sx={{ fontSize: 18, color: 'text.secondary' }} />
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                {dayjs(event.date).tz('America/New_York').format('MMM DD, YYYY h:mm A')} ET
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <Schedule sx={{ fontSize: 18, color: 'text.secondary', mt: 0.5 }} />
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                  {dayjs(event.date).tz('America/New_York').format('MMM DD, YYYY h:mm A')} ET{event.endDate && event.endTime ? ' -' : ''}
+                </Typography>
                 {event.endDate && event.endTime && (
-                  <> - {(() => {
-                    const endDateET = dayjs(event.endDate).tz('America/New_York');
-                    const [hours, minutes] = event.endTime.split(':');
-                    const endDateTime = endDateET.hour(parseInt(hours)).minute(parseInt(minutes));
-                    return endDateTime.format('MMM DD, YYYY h:mm A') + ' ET';
-                  })()}</>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    {(() => {
+                      const endDateET = dayjs(event.endDate).tz('America/New_York');
+                      const [hours, minutes] = event.endTime.split(':');
+                      const endDateTime = endDateET.hour(parseInt(hours)).minute(parseInt(minutes));
+                      return endDateTime.format('MMM DD, YYYY h:mm A') + ' ET';
+                    })()}
+                  </Typography>
                 )}
-              </Typography>
+              </Box>
             </Box>
             
             {event.location && (
