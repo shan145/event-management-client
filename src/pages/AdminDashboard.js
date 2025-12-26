@@ -47,6 +47,7 @@ const AdminDashboard = () => {
   const [groups, setGroups] = useState([]);
   const [events, setEvents] = useState([]);
   const [users, setUsers] = useState([]);
+  const [unreadCounts, setUnreadCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState(() => {
@@ -97,6 +98,23 @@ const AdminDashboard = () => {
       
       setGroups(groupsRes.data.data.groups);
       setUsers(usersRes.data.data.users);
+      
+      // Fetch unread message counts for all events
+      if (eventsRes.data.data && eventsRes.data.data.events) {
+        const eventIds = eventsRes.data.data.events.map(e => e._id).filter(id => id);
+        
+        if (eventIds.length > 0) {
+          try {
+            const unreadRes = await axios.get('/messages/unread-counts', {
+              params: { eventIds: eventIds.join(',') }
+            });
+            setUnreadCounts(unreadRes.data.data.unreadCounts || {});
+          } catch (unreadError) {
+            console.error('Failed to fetch unread counts:', unreadError);
+            // Don't fail the whole fetch if unread counts fail
+          }
+        }
+      }
     } catch (error) {
       console.error('AdminDashboard - fetchData error:', error);
       setError('Failed to fetch data');
@@ -343,6 +361,7 @@ const AdminDashboard = () => {
                       userRole={user.role}
                       currentUserId={user._id}
                       isGroupAdmin={user.groupAdminOf && event.groupId && user.groupAdminOf.some(group => group._id === event.groupId._id)}
+                      unreadMessageCount={unreadCounts[event._id] || 0}
                     />
                   </Grid>
                 );

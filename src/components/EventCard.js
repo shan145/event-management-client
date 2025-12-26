@@ -35,6 +35,7 @@ import {
   Email,
   Message,
 } from '@mui/icons-material';
+import Badge from '@mui/material/Badge';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -78,7 +79,7 @@ const LocationPicker = ({ value, onChange, placeholder = "Enter location name...
   );
 };
 
-const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroupAdmin, isPastEvent = false }) => {
+const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroupAdmin, isPastEvent = false, unreadMessageCount = 0 }) => {
   // All hooks must be called before any conditional returns
   const [showWaitlistDialog, setShowWaitlistDialog] = useState(false);
   const [showAttendeesDialog, setShowAttendeesDialog] = useState(false);
@@ -549,9 +550,27 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
           maxWidth: '100%',
           width: '100%'
         }}>
-          {/* Status chip at the top */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-            {getStatusChip()}
+          {/* Status chip and unread indicator at the top */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+            {unreadMessageCount > 0 && (
+              <Badge 
+                badgeContent={unreadMessageCount} 
+                color="error"
+                sx={{
+                  '& .MuiBadge-badge': {
+                    fontSize: '0.75rem',
+                    minWidth: '20px',
+                    height: '20px',
+                    padding: '0 6px'
+                  }
+                }}
+              >
+                <Message sx={{ color: 'primary.main', fontSize: 24 }} />
+              </Badge>
+            )}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', flex: 1 }}>
+              {getStatusChip()}
+            </Box>
           </Box>
           
           <Box sx={{ mb: 2 }}>
@@ -815,7 +834,15 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
                 </Button>
                 <Button
                   size="small"
-                  startIcon={<Message />}
+                  startIcon={
+                    unreadMessageCount > 0 ? (
+                      <Badge badgeContent={unreadMessageCount} color="error">
+                        <Message />
+                      </Badge>
+                    ) : (
+                      <Message />
+                    )
+                  }
                   onClick={() => setShowChatDialog(true)}
                   sx={{ 
                     margin: 0,
@@ -832,7 +859,15 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
             {isAdmin && (
               <Button
                 size="small"
-                startIcon={<Message />}
+                startIcon={
+                  unreadMessageCount > 0 ? (
+                    <Badge badgeContent={unreadMessageCount} color="error">
+                      <Message />
+                    </Badge>
+                  ) : (
+                    <Message />
+                  )
+                }
                 onClick={() => setShowChatDialog(true)}
                 sx={{ 
                   margin: 0,
@@ -1234,7 +1269,13 @@ const EventCard = ({ event, onUpdate, onDelete, userRole, currentUserId, isGroup
       {/* Chat Dialog */}
       <EventChatDialog
         open={showChatDialog}
-        onClose={() => setShowChatDialog(false)}
+        onClose={() => {
+          setShowChatDialog(false);
+          // Refresh unread counts after closing chat
+          if (onUpdate) {
+            onUpdate();
+          }
+        }}
         eventId={event._id}
       />
 

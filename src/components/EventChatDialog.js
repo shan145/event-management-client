@@ -38,6 +38,7 @@ const EventChatDialog = ({ open, onClose, eventId }) => {
     if (open && eventId) {
       loadMessages();
       startPolling();
+      markMessagesAsRead();
     } else {
       stopPolling();
     }
@@ -46,6 +47,17 @@ const EventChatDialog = ({ open, onClose, eventId }) => {
       stopPolling();
     };
   }, [open, eventId]);
+
+  const markMessagesAsRead = async () => {
+    if (!eventId) return;
+    
+    try {
+      await axios.post(`/messages/event/${eventId}/mark-read`);
+    } catch (error) {
+      console.error('Failed to mark messages as read:', error);
+      // Don't show error to user, this is a background operation
+    }
+  };
 
   useEffect(() => {
     const handleVisibilityChange = () => {

@@ -41,6 +41,7 @@ const UserDashboard = () => {
   const [userGroups, setUserGroups] = useState([]);
   const [userEvents, setUserEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
+  const [unreadCounts, setUnreadCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState(() => {
@@ -70,6 +71,24 @@ const UserDashboard = () => {
       setUserGroups(groupsRes.data.data.groups);
       setUserEvents(eventsRes.data.data.events);
       setPastEvents(pastEventsRes.data.data.events);
+      
+      // Fetch unread message counts for all events
+      const allEventIds = [
+        ...eventsRes.data.data.events.map(e => e._id),
+        ...pastEventsRes.data.data.events.map(e => e._id)
+      ];
+      
+      if (allEventIds.length > 0) {
+        try {
+          const unreadRes = await axios.get('/messages/unread-counts', {
+            params: { eventIds: allEventIds.join(',') }
+          });
+          setUnreadCounts(unreadRes.data.data.unreadCounts || {});
+        } catch (unreadError) {
+          console.error('Failed to fetch unread counts:', unreadError);
+          // Don't fail the whole fetch if unread counts fail
+        }
+      }
     } catch (error) {
       setError('Failed to fetch data');
     } finally {
@@ -304,6 +323,7 @@ const UserDashboard = () => {
                         const isGroupAdmin = user.groupAdminOf && event.groupId && user.groupAdminOf.some(group => group._id === event.groupId._id);
                         return isGroupAdmin;
                       })()}
+                      unreadMessageCount={unreadCounts[event._id] || 0}
                     />
                   </Grid>
                 ))}
@@ -355,6 +375,7 @@ const UserDashboard = () => {
                         return isGroupAdmin;
                       })()}
                       isPastEvent={true}
+                      unreadMessageCount={unreadCounts[event._id] || 0}
                     />
                   </Grid>
                 ))}
